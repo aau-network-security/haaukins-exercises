@@ -1,0 +1,15 @@
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+.idea
+.env
+.env_test
+certs
+config.yml
+data
+# Contains database logs when running on local
+logs
