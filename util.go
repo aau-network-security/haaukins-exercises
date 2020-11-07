@@ -7,7 +7,37 @@ import (
 )
 
 func (s *Server) GetExercises(ctx context.Context, empty *pb.Empty) (*pb.GetExercisesResponse, error) {
-	panic("implement me")
+	res, err := s.store.GetExercises()
+	if err != nil {
+		return nil, err
+	}
+
+	var exercises []*pb.Exercise
+	for _, e := range res {
+		var children []*pb.ChildExercise
+
+		//todo not the best way to manage it
+		//maybe refactor the db struct
+		for _, c := range e.Instance {
+			for _, x := range c.Flags {
+				children = append(children, &pb.ChildExercise{
+					Tag:             string(x.Tag),
+					Name:            x.Name,
+					EnvFlag:         x.EnvVar,
+					Points:          int32(x.Points),
+					TeamDescription: x.Description,
+				})
+			}
+		}
+
+		exercises = append(exercises, &pb.Exercise{
+			Tag:  string(e.Tag),
+			Name: e.Name,
+			//Category:    ,
+			Children: children,
+		})
+	}
+	return &pb.GetExercisesResponse{Exercises: exercises}, nil
 }
 
 func (s *Server) GetExerciseByTags(ctx context.Context, request *pb.GetExerciseByTagsRequest) (*pb.GetExercisesResponse, error) {
@@ -18,10 +48,12 @@ func (s *Server) GetExerciseByCategory(ctx context.Context, request *pb.GetExerc
 	panic("implement me")
 }
 
+//todo implement this
 func (s *Server) AddExercise(ctx context.Context, request *pb.AddExerciseRequest) (*pb.ResponseStatus, error) {
 	panic("implement me")
 }
 
+//todo implement this
 func (s *Server) UpdateExercise(ctx context.Context, request *pb.UpdateExerciseRequest) (*pb.ResponseStatus, error) {
 	panic("implement me")
 }

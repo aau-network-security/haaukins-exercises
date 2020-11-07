@@ -17,7 +17,7 @@ message ChildExercise{
     string name = 2;
     string env_flag = 3;
     int32 points = 4;
-    string category = 5;
+    reserved 5;
     string team_description = 6;
     reserved 7; //might be useful in the future
     //    string organizer_description = 8; //todo could be usefull to store all the exercises data in the db as well, we might want to generate PDF for organizer
@@ -25,11 +25,17 @@ message ChildExercise{
     //    repeated string outcome = 10;
 }
 
-message GetExercisesResponse{
+message Exercise{
     string tag = 1;
     string name = 2;
-    string description = 3;
-    repeated ChildExercise exercises = 4;
+    //string description = 3; //might be useful for organizers
+    reserved 3;
+    string category = 4;
+    repeated ChildExercise children = 5;
+}
+
+message GetExercisesResponse{
+    repeated Exercise exercises = 1;
 }
 
 message GetExerciseByTagsRequest{

@@ -22,7 +22,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: toor
     volumes:
-      - mongo-data:/data/db     #change into host volume
+      - mongo-data-dev:/data/db     #change into host volume
     networks:
       - internal
 
@@ -40,7 +40,7 @@ services:
       - internal
 
 volumes:
-  mongo-data:
+  mongo-data-dev:
 
 networks:
   internal:

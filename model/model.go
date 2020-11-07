@@ -10,10 +10,13 @@ type Category struct {
 	Name string             `bson:"name,omitempty"`
 }
 
+//todo add the status of the challenge (it might be not available in case of refactoring or error)
+//maybe add create day as well
 type Exercise struct {
 	ID       primitive.ObjectID       `bson:"_id,omitempty"`
 	Category primitive.ObjectID       `bson:"category,omitempty"`
 	Tag      Tag                      `bson:"tag,omitempty"`
+	Name     string                   `bson:"name,omitempty"`
 	Instance []ExerciseInstanceConfig `bson:"instance,omitempty"`
 }
 

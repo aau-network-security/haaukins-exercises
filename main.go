@@ -12,7 +12,7 @@ import (
 
 //todo add authentication
 type Server struct {
-	store *store.Store
+	store store.Store
 }
 
 func main() {
