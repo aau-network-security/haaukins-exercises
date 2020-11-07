@@ -30,10 +30,9 @@ type FlagConfig struct {
 	Tag         Tag    `bson:"tag,omitempty"`
 	Name        string `bson:"name,omitempty"`
 	EnvVar      string `bson:"env,omitempty"`
-	Static      string `bson:"static,omitempty"`
+	StaticFlag  string `bson:"static_flag,omitempty"`
 	Points      uint   `bson:"points,omitempty"`
 	Description string `bson:"description,omitempty"`
-	Category    string `bson:"category,omitempty"`
 }
 
 type RecordConfig struct {
