@@ -6,6 +6,7 @@ service ExerciseStore{
     rpc GetExerciseByCategory(GetExerciseByCategoryRequest) returns (GetExercisesResponse) {}
 
     //todo future implementation, those will be managed by the webclient
+    //make sure to do not add exercises or category with the same tag twice
     rpc AddExercise(AddExerciseRequest) returns (ResponseStatus) {}
     rpc UpdateExercise(UpdateExerciseRequest) returns (ResponseStatus) {}
 }

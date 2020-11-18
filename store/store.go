@@ -2,33 +2,27 @@ package store
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
-
-	"go.mongodb.org/mongo-driver/bson"
-
-	"github.com/aau-network-security/haaukins-exercises/model"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-)
 
-const (
-	DB_NAME         = "exercise_store"
-	EXER_COLLECTION = "exercise"
-	CAT_COLLECTION  = "category"
+	"github.com/aau-network-security/haaukins-exercises/model"
 )
 
 type Store interface {
-	GetExercises() ([]model.Exercise, error)
+	GetExercises() []model.Exercise
 	GetExercisesByTags([]string) ([]model.Exercise, error)
 	GetExerciseByCategory(string) ([]model.Exercise, error)
 }
 
 type store struct {
-	db *mongo.Client
-	m  sync.RWMutex
+	db     *mongo.Client
+	m      sync.RWMutex
+	categs map[model.Tag]model.Category
+	exs    map[model.Tag]model.Exercise
 }
 
 //todo pass config file to modify the connection parameters
@@ -46,82 +40,62 @@ func NewStore() (Store, error) {
 		return nil, err
 	}
 
-	return &store{db: client}, nil
-}
+	s := &store{
+		db:     client,
+		categs: make(map[model.Tag]model.Category),
+		exs:    make(map[model.Tag]model.Exercise),
+	}
 
-func (s *store) GetExercises() ([]model.Exercise, error) {
-	s.m.Lock()
-	defer s.m.Unlock()
-
-	collection := s.db.Database(DB_NAME).Collection(EXER_COLLECTION)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	cur, err := collection.Find(ctx, bson.D{})
-	if err != nil {
+	if err = s.initStore(); err != nil {
 		return nil, err
 	}
-	defer cur.Close(ctx)
 
-	return s.getExercises(ctx, cur)
+	return s, nil
+}
+
+func (s *store) GetExercises() []model.Exercise {
+	s.m.RLock()
+	defer s.m.RUnlock()
+
+	var exercises []model.Exercise
+	for _, e := range s.exs {
+		exercises = append(exercises, e)
+	}
+
+	return exercises
 }
 
 func (s *store) GetExercisesByTags(tags []string) ([]model.Exercise, error) {
-	s.m.Lock()
-	defer s.m.Unlock()
+	s.m.RLock()
+	defer s.m.RUnlock()
 
-	collection := s.db.Database(DB_NAME).Collection(EXER_COLLECTION)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	cur, err := collection.Find(ctx, bson.M{"tag": bson.M{"$in": tags}})
-	if err != nil {
-		return nil, err
-	}
-	defer cur.Close(ctx)
-
-	return s.getExercises(ctx, cur)
-}
-
-func (s *store) GetExerciseByCategory(cat string) ([]model.Exercise, error) {
-	s.m.Lock()
-	defer s.m.Unlock()
-
-	collection := s.db.Database(DB_NAME).Collection(EXER_COLLECTION)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	//todo get id from category tag
-	id, _ := primitive.ObjectIDFromHex("5fa68a7bccd7b8d3fc142277")
-	match := bson.D{{"$match", bson.D{{"cat", id}}}}
-	lookup := bson.D{{"$lookup", bson.D{
-		{"from", "category"},
-		{"localField", "cat"},
-		{"foreignField", "_id"},
-		{"as", "exercise"},
-	}}}
-
-	cur, err := collection.Aggregate(ctx, mongo.Pipeline{match, lookup})
-	if err != nil {
-		return nil, err
-	}
-	defer cur.Close(ctx)
-
-	return s.getExercises(ctx, cur)
-}
-
-func (s *store) getExercises(ctx context.Context, cur *mongo.Cursor) ([]model.Exercise, error) {
 	var exercises []model.Exercise
-	for cur.Next(ctx) {
-		var e model.Exercise
-		err := cur.Decode(&e)
-		if err != nil {
-			return nil, err
+	for _, t := range tags {
+		e, ok := s.exs[model.Tag(t)]
+		if !ok {
+			return nil, fmt.Errorf("exercise [%s] not found", t)
 		}
 		exercises = append(exercises, e)
 	}
-	if err := cur.Err(); err != nil {
-		return nil, err
+
+	return exercises, nil
+}
+
+func (s *store) GetExerciseByCategory(cat string) ([]model.Exercise, error) {
+	s.m.RLock()
+	defer s.m.RUnlock()
+
+	obj, ok := s.categs[model.Tag(cat)]
+	if !ok {
+		return nil, fmt.Errorf("category not found")
 	}
+
+	var exercises []model.Exercise
+	for _, e := range s.exs {
+		if e.Category == obj.ID {
+			exercises = append(exercises, e)
+		}
+	}
+
 	return exercises, nil
 }

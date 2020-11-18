@@ -7,13 +7,9 @@ import (
 )
 
 func (s *Server) GetExercises(ctx context.Context, empty *pb.Empty) (*pb.GetExercisesResponse, error) {
-	res, err := s.store.GetExercises()
-	if err != nil {
-		return nil, err
-	}
 
 	var exercises []*pb.Exercise
-	for _, e := range res {
+	for _, e := range s.store.GetExercises() {
 		var children []*pb.ChildExercise
 
 		//todo not the best way to manage it
@@ -33,7 +29,7 @@ func (s *Server) GetExercises(ctx context.Context, empty *pb.Empty) (*pb.GetExer
 		exercises = append(exercises, &pb.Exercise{
 			Tag:  string(e.Tag),
 			Name: e.Name,
-			//Category:    ,
+			//Category: s.store.GetCategoryName(),
 			Children: children,
 		})
 	}
