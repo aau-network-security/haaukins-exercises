@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -16,6 +18,8 @@ type Store interface {
 	GetExercises() []model.Exercise
 	GetExercisesByTags([]string) ([]model.Exercise, error)
 	GetExerciseByCategory(string) ([]model.Exercise, error)
+	GetCategories() []model.Category
+	GetCategoryName(primitive.ObjectID) string
 }
 
 type store struct {
@@ -63,6 +67,31 @@ func (s *store) GetExercises() []model.Exercise {
 	}
 
 	return exercises
+}
+
+func (s *store) GetCategories() []model.Category {
+	s.m.RLock()
+	defer s.m.RUnlock()
+
+	var categ []model.Category
+	for _, c := range s.categs {
+		categ = append(categ, c)
+	}
+
+	return categ
+}
+
+func (s *store) GetCategoryName(obj primitive.ObjectID) string {
+	s.m.RLock()
+	defer s.m.RUnlock()
+
+	for _, c := range s.categs {
+		if c.ID == obj {
+			return string(c.Tag)
+		}
+	}
+
+	return ""
 }
 
 func (s *store) GetExercisesByTags(tags []string) ([]model.Exercise, error) {
