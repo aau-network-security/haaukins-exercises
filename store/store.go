@@ -159,6 +159,7 @@ func (s *store) AddExercise(tag string, content string, catTag string) error {
 	}
 
 	ex.ID = primitive.NewObjectID()
+	ex.Tag = model.Tag(tag)
 	ex.Category = categ.ID
 
 	if err := checkExerciseFields(ex); err != nil {

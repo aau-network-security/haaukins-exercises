@@ -236,10 +236,32 @@ func TestStore_AddExercise(t *testing.T) {
 		t.Fatalf("Error creating the store: %v", err)
 	}
 
-	test := `{"tag": "random","name": "random","instance": [{"image": "ftp","memory": 10,"cpu": 10,"flags": [{"tag": "ftp","name": "ftp","env": "FLAG","points": 10,"description": "this is random"}]}],"status": 0}`
+	tt := []struct {
+		name    string
+		tag     string
+		content string
+		categ   string
+		err     bool
+	}{
+		{name: "Normal Exercise", tag: "random", content: `{"tag": "random","name": "random","instance": [{"image": "ftp","flags": [{"tag": "ftp","name": "ftp","env": "FLAG"}]}]}`, categ: "binary"},
+		{name: "Already Existing Exercise", tag: "random", content: `{"tag": "random","name": "random","instance": [{"image": "ftp","flags": [{"tag": "ftp","name": "ftp","env": "FLAG"}]}]}`, categ: "binary", err: true},
+		{name: "Missing Name", tag: "test1", content: `{"tag": "random","instance": [{"image": "ftp","flags": [{"tag": "ftp","name": "ftp","env": "FLAG"}]}]}`, categ: "binary", err: true},
+		{name: "Missing Instance", tag: "test2", content: `{"tag": "random","name": "random"}`, categ: "binary", err: true},
+		{name: "Missing Children", tag: "test3", content: `{"tag": "random","name": "random","instance": [{"image": "ftp"}]}`, categ: "binary", err: true},
+	}
 
-	if err := s.AddExercise("random", test, "binary"); err != nil {
-		t.Fatalf("error insert exercise: %s", err.Error())
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := s.AddExercise(tc.tag, tc.content, tc.categ); err != nil {
+				if tc.err {
+					return
+				}
+				t.Fatalf("error insert exercise: %s", err.Error())
+			}
+			if tc.err {
+				t.Fatal("Error expected")
+			}
+		})
 	}
 
 	exs, err := s.GetExercisesByTags([]string{"random"})
