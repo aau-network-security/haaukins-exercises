@@ -6,5 +6,5 @@ RUN go build -o server .
 
 FROM gcr.io/distroless/base-debian10
 COPY --from=builder /haaukins /
-EXPOSE 9090
+EXPOSE 50095
 CMD ["/server"]

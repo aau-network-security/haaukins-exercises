@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"context"
@@ -7,7 +7,6 @@ import (
 )
 
 func (s *Server) GetExercises(ctx context.Context, empty *pb.Empty) (*pb.GetExercisesResponse, error) {
-
 	var exercises []*pb.Exercise
 	for _, e := range s.store.GetExercises() {
 		var children []*pb.ChildExercise
@@ -44,12 +43,10 @@ func (s *Server) GetExerciseByCategory(ctx context.Context, request *pb.GetExerc
 	panic("implement me")
 }
 
-//todo implement this
 func (s *Server) AddExercise(ctx context.Context, request *pb.AddExerciseRequest) (*pb.ResponseStatus, error) {
 	panic("implement me")
 }
 
-//todo implement this
 func (s *Server) UpdateExercise(ctx context.Context, request *pb.UpdateExerciseRequest) (*pb.ResponseStatus, error) {
 	panic("implement me")
 }

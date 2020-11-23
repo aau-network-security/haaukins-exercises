@@ -16,6 +16,13 @@ var (
 	NCategories = []string{"forensics", "binary"}
 )
 
+const (
+	testHost = "localhost"
+	testPort = 27017
+	testUser = "root"
+	testPass = "toor"
+)
+
 //This function will add some data in the DB. it will return if in the DB there are already some categories
 //this has be done in order to avoid multiple insertion by calling this function in each test
 func AddRandomData() error {
@@ -100,7 +107,7 @@ func TestStore_GetExercises(t *testing.T) {
 		t.Fatalf("Error adding random data to the db: %v", err)
 	}
 
-	s, err := NewStore()
+	s, err := NewStore(testHost, testPort, testUser, testPass)
 	if err != nil {
 		t.Fatalf("Error creating the store: %v", err)
 	}
@@ -116,7 +123,7 @@ func TestStore_GetExercisesByTags(t *testing.T) {
 		t.Fatalf("Error adding random data to the db: %v", err)
 	}
 
-	s, err := NewStore()
+	s, err := NewStore(testHost, testPort, testUser, testPass)
 	if err != nil {
 		t.Fatalf("Error creating the store: %v", err)
 	}
@@ -150,7 +157,7 @@ func TestStore_GetExerciseByCategory(t *testing.T) {
 		t.Fatalf("Error adding random data to the db: %v", err)
 	}
 
-	s, err := NewStore()
+	s, err := NewStore(testHost, testPort, testUser, testPass)
 	if err != nil {
 		t.Fatalf("Error creating the store: %v", err)
 	}

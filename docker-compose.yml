@@ -2,19 +2,23 @@ version: '3'
 services:
   haaukins-exercises:
     container_name: haaukins-exercises
-#     env_file:
-#       - .env
+    env_file:
+      - .env
     build: .
     ports:
-      - 9090:9090       #change them according the .env file
-#     restart: on-failure
+      - 50095:50095       #change them according the .env file
+    restart: on-failure
     depends_on:
       - mongo
+    volumes:
+      - ${CONFIG_PATH}:/config.yml:ro  # mount config file
     networks:
       - internal
 
   mongo:
     image: mongo
+    env_file:
+      - .env
     restart: always
     ports:
       - "27017:27017"
