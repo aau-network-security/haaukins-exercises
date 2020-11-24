@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -29,10 +30,10 @@ func AddRandomData() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().
-		ApplyURI("mongodb://localhost:27017").
+		ApplyURI(fmt.Sprintf("mongodb://%s:%d", testHost, testPort)).
 		SetAuth(options.Credential{
-			Username: "root",
-			Password: "toor",
+			Username: testUser,
+			Password: testPass,
 		}))
 	if err != nil {
 		return err
@@ -45,6 +46,9 @@ func AddRandomData() error {
 
 	//Skip the function if there are already categories and exercises in the DB
 	countDocuments, err := collection.EstimatedDocumentCount(ctx, nil, nil)
+	if err != nil {
+		return err
+	}
 	if countDocuments > 0 {
 		return nil
 	}
@@ -203,7 +207,7 @@ func TestStore_AddCategory(t *testing.T) {
 		t.Fatalf("Error adding random data to the db: %v", err)
 	}
 
-	s, err := NewStore()
+	s, err := NewStore(testHost, testPort, testUser, testPass)
 	if err != nil {
 		t.Fatalf("Error creating the store: %v", err)
 	}
@@ -238,7 +242,7 @@ func TestStore_AddExercise(t *testing.T) {
 		t.Fatalf("Error adding random data to the db: %v", err)
 	}
 
-	s, err := NewStore()
+	s, err := NewStore(testHost, testPort, testUser, testPass)
 	if err != nil {
 		t.Fatalf("Error creating the store: %v", err)
 	}
