@@ -2,27 +2,33 @@ version: '3'
 services:
   haaukins-exercises:
     container_name: haaukins-exercises
-#     env_file:
-#       - .env
+    env_file:
+      - .env
     build: .
     ports:
-      - 9090:9090       #change them according the .env file
-#     restart: on-failure
+      - 50095:50095       #change them according the .env file
+    restart: on-failure
     depends_on:
       - mongo
+    volumes:
+      - ${CONFIG_PATH}:/config.yml:ro  # mount config file
     networks:
       - internal
 
   mongo:
     image: mongo
+    env_file:
+      - .env
     restart: always
+    env_file:
+      - .env
     ports:
       - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: toor
     volumes:
-      - mongo-data-dev:/data/db     #change into host volume
+      - ${MONGO_DATA_PATH}:/data/db
     networks:
       - internal
 
@@ -38,9 +44,6 @@ services:
       ME_CONFIG_BASICAUTH_PASSWORD: secret
     networks:
       - internal
-
-volumes:
-  mongo-data-dev:
 
 networks:
   internal:
