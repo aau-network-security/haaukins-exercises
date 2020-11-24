@@ -84,11 +84,11 @@ func AddRandomData() error {
 					Envs:     nil,
 					Flags: []model.FlagConfig{
 						{
-							Tag:         model.Tag(e),
-							Name:        e,
-							EnvVar:      "FLAG",
-							Points:      10,
-							Description: "this is a test",
+							Tag:             model.Tag(e),
+							Name:            e,
+							EnvVar:          "FLAG",
+							Points:          10,
+							TeamDescription: "this is a test",
 						},
 					},
 					Records: nil,

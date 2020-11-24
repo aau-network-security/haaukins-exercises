@@ -30,12 +30,15 @@ type ExerciseInstanceConfig struct {
 }
 
 type FlagConfig struct {
-	Tag         Tag    `bson:"tag,omitempty"`
-	Name        string `bson:"name,omitempty"`
-	EnvVar      string `bson:"env,omitempty"`
-	StaticFlag  string `bson:"static_flag,omitempty"`
-	Points      uint   `bson:"points,omitempty"`
-	Description string `bson:"description,omitempty"`
+	Tag             Tag      `bson:"tag,omitempty"`
+	Name            string   `bson:"name,omitempty"`
+	EnvVar          string   `bson:"env,omitempty"`
+	StaticFlag      string   `bson:"static_flag,omitempty"`
+	Points          uint     `bson:"points,omitempty"`
+	TeamDescription string   `bson:"td,omitempty"`
+	OrgDescription  string   `bson:"od,omitempty"`
+	PreRequisites   []string `bson:"reqs,omitempty"`
+	Outcomes        []string `bson:"outc,omitempty"`
 }
 
 type RecordConfig struct {

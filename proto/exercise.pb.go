@@ -60,7 +60,11 @@ type ChildExercise struct {
 	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	EnvFlag              string   `protobuf:"bytes,3,opt,name=env_flag,json=envFlag,proto3" json:"env_flag,omitempty"`
 	Points               int32    `protobuf:"varint,4,opt,name=points,proto3" json:"points,omitempty"`
+	Static               string   `protobuf:"bytes,5,opt,name=static,proto3" json:"static,omitempty"`
 	TeamDescription      string   `protobuf:"bytes,6,opt,name=team_description,json=teamDescription,proto3" json:"team_description,omitempty"`
+	OrganizerDescription string   `protobuf:"bytes,8,opt,name=organizer_description,json=organizerDescription,proto3" json:"organizer_description,omitempty"`
+	Prerequisite         []string `protobuf:"bytes,9,rep,name=prerequisite,proto3" json:"prerequisite,omitempty"`
+	Outcome              []string `protobuf:"bytes,10,rep,name=outcome,proto3" json:"outcome,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -119,6 +123,13 @@ func (m *ChildExercise) GetPoints() int32 {
 	return 0
 }
 
+func (m *ChildExercise) GetStatic() string {
+	if m != nil {
+		return m.Static
+	}
+	return ""
+}
+
 func (m *ChildExercise) GetTeamDescription() string {
 	if m != nil {
 		return m.TeamDescription
@@ -126,21 +137,225 @@ func (m *ChildExercise) GetTeamDescription() string {
 	return ""
 }
 
-type Exercise struct {
-	Tag                  string           `protobuf:"bytes,1,opt,name=tag,proto3" json:"tag,omitempty"`
-	Name                 string           `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Category             string           `protobuf:"bytes,4,opt,name=category,proto3" json:"category,omitempty"`
-	Children             []*ChildExercise `protobuf:"bytes,5,rep,name=children,proto3" json:"children,omitempty"`
+func (m *ChildExercise) GetOrganizerDescription() string {
+	if m != nil {
+		return m.OrganizerDescription
+	}
+	return ""
+}
+
+func (m *ChildExercise) GetPrerequisite() []string {
+	if m != nil {
+		return m.Prerequisite
+	}
+	return nil
+}
+
+func (m *ChildExercise) GetOutcome() []string {
+	if m != nil {
+		return m.Outcome
+	}
+	return nil
+}
+
+type EnvVariable struct {
+	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Value                string   `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *EnvVariable) Reset()         { *m = EnvVariable{} }
+func (m *EnvVariable) String() string { return proto.CompactTextString(m) }
+func (*EnvVariable) ProtoMessage()    {}
+func (*EnvVariable) Descriptor() ([]byte, []int) {
+	return fileDescriptor_072c1ef9e72c0732, []int{2}
+}
+
+func (m *EnvVariable) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_EnvVariable.Unmarshal(m, b)
+}
+func (m *EnvVariable) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_EnvVariable.Marshal(b, m, deterministic)
+}
+func (m *EnvVariable) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EnvVariable.Merge(m, src)
+}
+func (m *EnvVariable) XXX_Size() int {
+	return xxx_messageInfo_EnvVariable.Size(m)
+}
+func (m *EnvVariable) XXX_DiscardUnknown() {
+	xxx_messageInfo_EnvVariable.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EnvVariable proto.InternalMessageInfo
+
+func (m *EnvVariable) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *EnvVariable) GetValue() string {
+	if m != nil {
+		return m.Value
+	}
+	return ""
+}
+
+type Records struct {
+	Type                 string   `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
+	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Data                 string   `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Records) Reset()         { *m = Records{} }
+func (m *Records) String() string { return proto.CompactTextString(m) }
+func (*Records) ProtoMessage()    {}
+func (*Records) Descriptor() ([]byte, []int) {
+	return fileDescriptor_072c1ef9e72c0732, []int{3}
+}
+
+func (m *Records) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Records.Unmarshal(m, b)
+}
+func (m *Records) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Records.Marshal(b, m, deterministic)
+}
+func (m *Records) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Records.Merge(m, src)
+}
+func (m *Records) XXX_Size() int {
+	return xxx_messageInfo_Records.Size(m)
+}
+func (m *Records) XXX_DiscardUnknown() {
+	xxx_messageInfo_Records.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Records proto.InternalMessageInfo
+
+func (m *Records) GetType() string {
+	if m != nil {
+		return m.Type
+	}
+	return ""
+}
+
+func (m *Records) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *Records) GetData() string {
+	if m != nil {
+		return m.Data
+	}
+	return ""
+}
+
+type ExerciseInstance struct {
+	Image                string           `protobuf:"bytes,1,opt,name=image,proto3" json:"image,omitempty"`
+	Memory               int32            `protobuf:"varint,2,opt,name=memory,proto3" json:"memory,omitempty"`
+	Cpu                  float32          `protobuf:"fixed32,3,opt,name=cpu,proto3" json:"cpu,omitempty"`
+	Envs                 []*EnvVariable   `protobuf:"bytes,4,rep,name=envs,proto3" json:"envs,omitempty"`
+	Records              []*Records       `protobuf:"bytes,5,rep,name=records,proto3" json:"records,omitempty"`
+	Children             []*ChildExercise `protobuf:"bytes,6,rep,name=children,proto3" json:"children,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
 	XXX_unrecognized     []byte           `json:"-"`
 	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *ExerciseInstance) Reset()         { *m = ExerciseInstance{} }
+func (m *ExerciseInstance) String() string { return proto.CompactTextString(m) }
+func (*ExerciseInstance) ProtoMessage()    {}
+func (*ExerciseInstance) Descriptor() ([]byte, []int) {
+	return fileDescriptor_072c1ef9e72c0732, []int{4}
+}
+
+func (m *ExerciseInstance) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ExerciseInstance.Unmarshal(m, b)
+}
+func (m *ExerciseInstance) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ExerciseInstance.Marshal(b, m, deterministic)
+}
+func (m *ExerciseInstance) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ExerciseInstance.Merge(m, src)
+}
+func (m *ExerciseInstance) XXX_Size() int {
+	return xxx_messageInfo_ExerciseInstance.Size(m)
+}
+func (m *ExerciseInstance) XXX_DiscardUnknown() {
+	xxx_messageInfo_ExerciseInstance.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ExerciseInstance proto.InternalMessageInfo
+
+func (m *ExerciseInstance) GetImage() string {
+	if m != nil {
+		return m.Image
+	}
+	return ""
+}
+
+func (m *ExerciseInstance) GetMemory() int32 {
+	if m != nil {
+		return m.Memory
+	}
+	return 0
+}
+
+func (m *ExerciseInstance) GetCpu() float32 {
+	if m != nil {
+		return m.Cpu
+	}
+	return 0
+}
+
+func (m *ExerciseInstance) GetEnvs() []*EnvVariable {
+	if m != nil {
+		return m.Envs
+	}
+	return nil
+}
+
+func (m *ExerciseInstance) GetRecords() []*Records {
+	if m != nil {
+		return m.Records
+	}
+	return nil
+}
+
+func (m *ExerciseInstance) GetChildren() []*ChildExercise {
+	if m != nil {
+		return m.Children
+	}
+	return nil
+}
+
+type Exercise struct {
+	Tag                  string              `protobuf:"bytes,1,opt,name=tag,proto3" json:"tag,omitempty"`
+	Name                 string              `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description          string              `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	Category             string              `protobuf:"bytes,4,opt,name=category,proto3" json:"category,omitempty"`
+	Status               int32               `protobuf:"varint,5,opt,name=status,proto3" json:"status,omitempty"`
+	Instance             []*ExerciseInstance `protobuf:"bytes,6,rep,name=instance,proto3" json:"instance,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
+	XXX_unrecognized     []byte              `json:"-"`
+	XXX_sizecache        int32               `json:"-"`
 }
 
 func (m *Exercise) Reset()         { *m = Exercise{} }
 func (m *Exercise) String() string { return proto.CompactTextString(m) }
 func (*Exercise) ProtoMessage()    {}
 func (*Exercise) Descriptor() ([]byte, []int) {
-	return fileDescriptor_072c1ef9e72c0732, []int{2}
+	return fileDescriptor_072c1ef9e72c0732, []int{5}
 }
 
 func (m *Exercise) XXX_Unmarshal(b []byte) error {
@@ -175,6 +390,13 @@ func (m *Exercise) GetName() string {
 	return ""
 }
 
+func (m *Exercise) GetDescription() string {
+	if m != nil {
+		return m.Description
+	}
+	return ""
+}
+
 func (m *Exercise) GetCategory() string {
 	if m != nil {
 		return m.Category
@@ -182,9 +404,16 @@ func (m *Exercise) GetCategory() string {
 	return ""
 }
 
-func (m *Exercise) GetChildren() []*ChildExercise {
+func (m *Exercise) GetStatus() int32 {
 	if m != nil {
-		return m.Children
+		return m.Status
+	}
+	return 0
+}
+
+func (m *Exercise) GetInstance() []*ExerciseInstance {
+	if m != nil {
+		return m.Instance
 	}
 	return nil
 }
@@ -200,7 +429,7 @@ func (m *GetExercisesResponse) Reset()         { *m = GetExercisesResponse{} }
 func (m *GetExercisesResponse) String() string { return proto.CompactTextString(m) }
 func (*GetExercisesResponse) ProtoMessage()    {}
 func (*GetExercisesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_072c1ef9e72c0732, []int{3}
+	return fileDescriptor_072c1ef9e72c0732, []int{6}
 }
 
 func (m *GetExercisesResponse) XXX_Unmarshal(b []byte) error {
@@ -239,7 +468,7 @@ func (m *GetExerciseByTagsRequest) Reset()         { *m = GetExerciseByTagsReque
 func (m *GetExerciseByTagsRequest) String() string { return proto.CompactTextString(m) }
 func (*GetExerciseByTagsRequest) ProtoMessage()    {}
 func (*GetExerciseByTagsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_072c1ef9e72c0732, []int{4}
+	return fileDescriptor_072c1ef9e72c0732, []int{7}
 }
 
 func (m *GetExerciseByTagsRequest) XXX_Unmarshal(b []byte) error {
@@ -278,7 +507,7 @@ func (m *GetExerciseByCategoryRequest) Reset()         { *m = GetExerciseByCateg
 func (m *GetExerciseByCategoryRequest) String() string { return proto.CompactTextString(m) }
 func (*GetExerciseByCategoryRequest) ProtoMessage()    {}
 func (*GetExerciseByCategoryRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_072c1ef9e72c0732, []int{5}
+	return fileDescriptor_072c1ef9e72c0732, []int{8}
 }
 
 func (m *GetExerciseByCategoryRequest) XXX_Unmarshal(b []byte) error {
@@ -306,7 +535,96 @@ func (m *GetExerciseByCategoryRequest) GetCategory() string {
 	return ""
 }
 
+type GetCategoriesResponse struct {
+	Categories           []*GetCategoriesResponse_Category `protobuf:"bytes,1,rep,name=categories,proto3" json:"categories,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                          `json:"-"`
+	XXX_unrecognized     []byte                            `json:"-"`
+	XXX_sizecache        int32                             `json:"-"`
+}
+
+func (m *GetCategoriesResponse) Reset()         { *m = GetCategoriesResponse{} }
+func (m *GetCategoriesResponse) String() string { return proto.CompactTextString(m) }
+func (*GetCategoriesResponse) ProtoMessage()    {}
+func (*GetCategoriesResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_072c1ef9e72c0732, []int{9}
+}
+
+func (m *GetCategoriesResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetCategoriesResponse.Unmarshal(m, b)
+}
+func (m *GetCategoriesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetCategoriesResponse.Marshal(b, m, deterministic)
+}
+func (m *GetCategoriesResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetCategoriesResponse.Merge(m, src)
+}
+func (m *GetCategoriesResponse) XXX_Size() int {
+	return xxx_messageInfo_GetCategoriesResponse.Size(m)
+}
+func (m *GetCategoriesResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetCategoriesResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetCategoriesResponse proto.InternalMessageInfo
+
+func (m *GetCategoriesResponse) GetCategories() []*GetCategoriesResponse_Category {
+	if m != nil {
+		return m.Categories
+	}
+	return nil
+}
+
+type GetCategoriesResponse_Category struct {
+	Tag                  string   `protobuf:"bytes,1,opt,name=tag,proto3" json:"tag,omitempty"`
+	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetCategoriesResponse_Category) Reset()         { *m = GetCategoriesResponse_Category{} }
+func (m *GetCategoriesResponse_Category) String() string { return proto.CompactTextString(m) }
+func (*GetCategoriesResponse_Category) ProtoMessage()    {}
+func (*GetCategoriesResponse_Category) Descriptor() ([]byte, []int) {
+	return fileDescriptor_072c1ef9e72c0732, []int{9, 0}
+}
+
+func (m *GetCategoriesResponse_Category) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetCategoriesResponse_Category.Unmarshal(m, b)
+}
+func (m *GetCategoriesResponse_Category) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetCategoriesResponse_Category.Marshal(b, m, deterministic)
+}
+func (m *GetCategoriesResponse_Category) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetCategoriesResponse_Category.Merge(m, src)
+}
+func (m *GetCategoriesResponse_Category) XXX_Size() int {
+	return xxx_messageInfo_GetCategoriesResponse_Category.Size(m)
+}
+func (m *GetCategoriesResponse_Category) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetCategoriesResponse_Category.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetCategoriesResponse_Category proto.InternalMessageInfo
+
+func (m *GetCategoriesResponse_Category) GetTag() string {
+	if m != nil {
+		return m.Tag
+	}
+	return ""
+}
+
+func (m *GetCategoriesResponse_Category) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
 type AddExerciseRequest struct {
+	Tag                  string   `protobuf:"bytes,1,opt,name=tag,proto3" json:"tag,omitempty"`
+	CategoryTag          string   `protobuf:"bytes,2,opt,name=categoryTag,proto3" json:"categoryTag,omitempty"`
+	Content              string   `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -316,7 +634,7 @@ func (m *AddExerciseRequest) Reset()         { *m = AddExerciseRequest{} }
 func (m *AddExerciseRequest) String() string { return proto.CompactTextString(m) }
 func (*AddExerciseRequest) ProtoMessage()    {}
 func (*AddExerciseRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_072c1ef9e72c0732, []int{6}
+	return fileDescriptor_072c1ef9e72c0732, []int{10}
 }
 
 func (m *AddExerciseRequest) XXX_Unmarshal(b []byte) error {
@@ -337,6 +655,74 @@ func (m *AddExerciseRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_AddExerciseRequest proto.InternalMessageInfo
 
+func (m *AddExerciseRequest) GetTag() string {
+	if m != nil {
+		return m.Tag
+	}
+	return ""
+}
+
+func (m *AddExerciseRequest) GetCategoryTag() string {
+	if m != nil {
+		return m.CategoryTag
+	}
+	return ""
+}
+
+func (m *AddExerciseRequest) GetContent() string {
+	if m != nil {
+		return m.Content
+	}
+	return ""
+}
+
+type AddCategoryRequest struct {
+	Tag                  string   `protobuf:"bytes,1,opt,name=tag,proto3" json:"tag,omitempty"`
+	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *AddCategoryRequest) Reset()         { *m = AddCategoryRequest{} }
+func (m *AddCategoryRequest) String() string { return proto.CompactTextString(m) }
+func (*AddCategoryRequest) ProtoMessage()    {}
+func (*AddCategoryRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_072c1ef9e72c0732, []int{11}
+}
+
+func (m *AddCategoryRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AddCategoryRequest.Unmarshal(m, b)
+}
+func (m *AddCategoryRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AddCategoryRequest.Marshal(b, m, deterministic)
+}
+func (m *AddCategoryRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AddCategoryRequest.Merge(m, src)
+}
+func (m *AddCategoryRequest) XXX_Size() int {
+	return xxx_messageInfo_AddCategoryRequest.Size(m)
+}
+func (m *AddCategoryRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_AddCategoryRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AddCategoryRequest proto.InternalMessageInfo
+
+func (m *AddCategoryRequest) GetTag() string {
+	if m != nil {
+		return m.Tag
+	}
+	return ""
+}
+
+func (m *AddCategoryRequest) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
 type ResponseStatus struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -347,7 +733,7 @@ func (m *ResponseStatus) Reset()         { *m = ResponseStatus{} }
 func (m *ResponseStatus) String() string { return proto.CompactTextString(m) }
 func (*ResponseStatus) ProtoMessage()    {}
 func (*ResponseStatus) Descriptor() ([]byte, []int) {
-	return fileDescriptor_072c1ef9e72c0732, []int{7}
+	return fileDescriptor_072c1ef9e72c0732, []int{12}
 }
 
 func (m *ResponseStatus) XXX_Unmarshal(b []byte) error {
@@ -378,7 +764,7 @@ func (m *UpdateExerciseRequest) Reset()         { *m = UpdateExerciseRequest{} }
 func (m *UpdateExerciseRequest) String() string { return proto.CompactTextString(m) }
 func (*UpdateExerciseRequest) ProtoMessage()    {}
 func (*UpdateExerciseRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_072c1ef9e72c0732, []int{8}
+	return fileDescriptor_072c1ef9e72c0732, []int{13}
 }
 
 func (m *UpdateExerciseRequest) XXX_Unmarshal(b []byte) error {
@@ -399,49 +785,106 @@ func (m *UpdateExerciseRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_UpdateExerciseRequest proto.InternalMessageInfo
 
+type UpdateCategoryRequest struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UpdateCategoryRequest) Reset()         { *m = UpdateCategoryRequest{} }
+func (m *UpdateCategoryRequest) String() string { return proto.CompactTextString(m) }
+func (*UpdateCategoryRequest) ProtoMessage()    {}
+func (*UpdateCategoryRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_072c1ef9e72c0732, []int{14}
+}
+
+func (m *UpdateCategoryRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdateCategoryRequest.Unmarshal(m, b)
+}
+func (m *UpdateCategoryRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdateCategoryRequest.Marshal(b, m, deterministic)
+}
+func (m *UpdateCategoryRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateCategoryRequest.Merge(m, src)
+}
+func (m *UpdateCategoryRequest) XXX_Size() int {
+	return xxx_messageInfo_UpdateCategoryRequest.Size(m)
+}
+func (m *UpdateCategoryRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateCategoryRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdateCategoryRequest proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*Empty)(nil), "Empty")
 	proto.RegisterType((*ChildExercise)(nil), "ChildExercise")
+	proto.RegisterType((*EnvVariable)(nil), "EnvVariable")
+	proto.RegisterType((*Records)(nil), "Records")
+	proto.RegisterType((*ExerciseInstance)(nil), "ExerciseInstance")
 	proto.RegisterType((*Exercise)(nil), "Exercise")
 	proto.RegisterType((*GetExercisesResponse)(nil), "GetExercisesResponse")
 	proto.RegisterType((*GetExerciseByTagsRequest)(nil), "GetExerciseByTagsRequest")
 	proto.RegisterType((*GetExerciseByCategoryRequest)(nil), "GetExerciseByCategoryRequest")
+	proto.RegisterType((*GetCategoriesResponse)(nil), "GetCategoriesResponse")
+	proto.RegisterType((*GetCategoriesResponse_Category)(nil), "GetCategoriesResponse.Category")
 	proto.RegisterType((*AddExerciseRequest)(nil), "AddExerciseRequest")
+	proto.RegisterType((*AddCategoryRequest)(nil), "AddCategoryRequest")
 	proto.RegisterType((*ResponseStatus)(nil), "ResponseStatus")
 	proto.RegisterType((*UpdateExerciseRequest)(nil), "UpdateExerciseRequest")
+	proto.RegisterType((*UpdateCategoryRequest)(nil), "UpdateCategoryRequest")
 }
 
 func init() { proto.RegisterFile("exercise.proto", fileDescriptor_072c1ef9e72c0732) }
 
 var fileDescriptor_072c1ef9e72c0732 = []byte{
-	// 418 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x93, 0xc1, 0x6e, 0xd3, 0x40,
-	0x10, 0x86, 0xeb, 0xda, 0x71, 0x36, 0x53, 0x9a, 0x9a, 0xa1, 0x29, 0xdb, 0x08, 0xa4, 0x68, 0x2f,
-	0x04, 0x84, 0x16, 0xa9, 0x88, 0x0b, 0x1c, 0x10, 0x94, 0x52, 0x29, 0x17, 0x24, 0x17, 0xce, 0xd5,
-	0x12, 0x0f, 0xc6, 0x52, 0x62, 0x1b, 0xef, 0xb6, 0x22, 0x17, 0x5e, 0x85, 0x37, 0xe2, 0x99, 0x50,
-	0x16, 0x3b, 0xb6, 0x5b, 0x07, 0xa9, 0xb7, 0x9d, 0x7f, 0x66, 0x7e, 0xcd, 0xff, 0xc9, 0x86, 0x21,
-	0xfd, 0xa4, 0x62, 0x9e, 0x68, 0x92, 0x79, 0x91, 0x99, 0x4c, 0xf4, 0xa1, 0x77, 0xb6, 0xcc, 0xcd,
-	0x4a, 0xfc, 0x76, 0x60, 0xff, 0xf4, 0x7b, 0xb2, 0x88, 0xce, 0xca, 0x01, 0x0c, 0xc0, 0x35, 0x2a,
-	0xe6, 0xce, 0xc4, 0x99, 0x0e, 0xc2, 0xf5, 0x13, 0x11, 0xbc, 0x54, 0x2d, 0x89, 0xef, 0x5a, 0xc9,
-	0xbe, 0xf1, 0x18, 0x18, 0xa5, 0xd7, 0x97, 0xdf, 0x16, 0x2a, 0xe6, 0xae, 0xd5, 0xfb, 0x94, 0x5e,
-	0x7f, 0x5c, 0xa8, 0x18, 0x8f, 0xc0, 0xcf, 0xb3, 0x24, 0x35, 0x9a, 0x7b, 0x13, 0x67, 0xda, 0x0b,
-	0xcb, 0x0a, 0x9f, 0x42, 0x60, 0x48, 0x2d, 0x2f, 0x23, 0xd2, 0xf3, 0x22, 0xc9, 0x4d, 0x92, 0xa5,
-	0xdc, 0xb7, 0xab, 0x07, 0x6b, 0xfd, 0x43, 0x2d, 0xcf, 0x3c, 0xd6, 0x0b, 0xfc, 0x99, 0xc7, 0xfa,
-	0x01, 0x13, 0xbf, 0x80, 0xdd, 0xf1, 0xb6, 0x31, 0xb0, 0xb9, 0x32, 0x14, 0x67, 0xc5, 0xca, 0x9e,
-	0x30, 0x08, 0x37, 0x35, 0x3e, 0x03, 0x36, 0x5f, 0xc7, 0x2d, 0x28, 0xe5, 0xbd, 0x89, 0x3b, 0xdd,
-	0x3b, 0x19, 0xca, 0x56, 0xfe, 0x70, 0xd3, 0x9f, 0x79, 0xcc, 0x0d, 0x3c, 0xf1, 0x16, 0x0e, 0xcf,
-	0xc9, 0x54, 0x6d, 0x1d, 0x92, 0xce, 0xb3, 0x54, 0x13, 0x3e, 0x81, 0x41, 0x05, 0x55, 0x73, 0xc7,
-	0x5a, 0x0d, 0xe4, 0xc6, 0xa5, 0xee, 0x89, 0xe7, 0xc0, 0x1b, 0x06, 0xef, 0x57, 0x9f, 0x55, 0xac,
-	0x43, 0xfa, 0x71, 0x45, 0xda, 0xd4, 0x81, 0xdc, 0x32, 0x90, 0x78, 0x0d, 0x8f, 0x5a, 0xd3, 0xa7,
-	0xe5, 0xe5, 0xd5, 0x46, 0x33, 0x9c, 0xd3, 0x0e, 0x27, 0x0e, 0x01, 0xdf, 0x45, 0x75, 0x92, 0x7f,
-	0x1b, 0x22, 0x80, 0x61, 0x75, 0xf4, 0x85, 0x51, 0xe6, 0x4a, 0x8b, 0x87, 0x30, 0xfa, 0x92, 0x47,
-	0xca, 0xd0, 0x8d, 0xd1, 0x93, 0x3f, 0xbb, 0xb0, 0x5f, 0x69, 0x17, 0x26, 0x2b, 0x08, 0x5f, 0xc0,
-	0xbd, 0x66, 0x7a, 0xf4, 0xa5, 0xfd, 0x6e, 0xc6, 0x23, 0xd9, 0x05, 0x45, 0xec, 0xe0, 0x39, 0xdc,
-	0xbf, 0x95, 0x16, 0x8f, 0xe5, 0x36, 0x02, 0xdb, 0x8d, 0x3e, 0xc1, 0xa8, 0x13, 0x04, 0x3e, 0x96,
-	0xff, 0x03, 0xb4, 0xdd, 0xf0, 0x15, 0xec, 0x35, 0xe8, 0xe0, 0x03, 0x79, 0x9b, 0xd5, 0xf8, 0x40,
-	0xde, 0x40, 0xb5, 0x83, 0x6f, 0x60, 0xd8, 0x86, 0x85, 0x47, 0xb2, 0x93, 0x5e, 0xc7, 0xf2, 0x57,
-	0xdf, 0xfe, 0x6e, 0x2f, 0xff, 0x06, 0x00, 0x00, 0xff, 0xff, 0xcb, 0xd4, 0xb2, 0x6c, 0x80, 0x03,
-	0x00, 0x00,
+	// 724 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x55, 0xcb, 0x6e, 0xd3, 0x4c,
+	0x14, 0xae, 0x9b, 0x9b, 0x73, 0xd2, 0xa6, 0xe9, 0xfc, 0x4d, 0x7f, 0x37, 0x02, 0x11, 0xcd, 0x86,
+	0x80, 0xc0, 0x40, 0x2b, 0x84, 0x54, 0x16, 0x15, 0x94, 0x50, 0xc1, 0x06, 0x69, 0x5a, 0xd8, 0x56,
+	0x53, 0xe7, 0x60, 0x2c, 0x25, 0xb6, 0xeb, 0x99, 0x44, 0x84, 0x47, 0xe0, 0x39, 0x78, 0x05, 0xde,
+	0x80, 0x57, 0x62, 0x8f, 0x66, 0x32, 0xe3, 0x38, 0x69, 0x5a, 0xca, 0x6e, 0xce, 0xe5, 0x3b, 0x97,
+	0xef, 0x7c, 0x71, 0xa0, 0x89, 0x5f, 0x31, 0x0b, 0x22, 0x81, 0x7e, 0x9a, 0x25, 0x32, 0xa1, 0x35,
+	0xa8, 0xf4, 0x47, 0xa9, 0x9c, 0xd2, 0x1f, 0xeb, 0xb0, 0x79, 0xfc, 0x25, 0x1a, 0x0e, 0xfa, 0x26,
+	0x81, 0xb4, 0xa0, 0x24, 0x79, 0xe8, 0x39, 0x5d, 0xa7, 0x57, 0x67, 0xea, 0x49, 0x08, 0x94, 0x63,
+	0x3e, 0x42, 0x6f, 0x5d, 0xbb, 0xf4, 0x9b, 0xec, 0x81, 0x8b, 0xf1, 0xe4, 0xfc, 0xf3, 0x90, 0x87,
+	0x5e, 0x49, 0xfb, 0x6b, 0x18, 0x4f, 0xde, 0x0e, 0x79, 0x48, 0x76, 0xa1, 0x9a, 0x26, 0x51, 0x2c,
+	0x85, 0x57, 0xee, 0x3a, 0xbd, 0x0a, 0x33, 0x96, 0xf2, 0x0b, 0xc9, 0x65, 0x14, 0x78, 0x15, 0x0d,
+	0x30, 0x16, 0x79, 0x00, 0x2d, 0x89, 0x7c, 0x74, 0x3e, 0x40, 0x11, 0x64, 0x51, 0x2a, 0xa3, 0x24,
+	0xf6, 0xaa, 0x3a, 0x63, 0x4b, 0xf9, 0xdf, 0xcc, 0xdd, 0xe4, 0x00, 0xda, 0x49, 0x16, 0xf2, 0x38,
+	0xfa, 0x86, 0xd9, 0x42, 0xbe, 0xab, 0xf3, 0x77, 0xf2, 0x60, 0x11, 0x44, 0x61, 0x23, 0xcd, 0x30,
+	0xc3, 0xcb, 0x71, 0x24, 0x22, 0x89, 0x5e, 0xbd, 0x5b, 0xea, 0xd5, 0xd9, 0x82, 0x8f, 0x78, 0x50,
+	0x4b, 0xc6, 0x32, 0x48, 0x46, 0xe8, 0x81, 0x0e, 0x5b, 0xf3, 0x7d, 0xd9, 0xad, 0xb5, 0x5c, 0xfa,
+	0x02, 0x1a, 0xfd, 0x78, 0xf2, 0x89, 0x67, 0x11, 0xbf, 0x18, 0x62, 0xce, 0x88, 0x53, 0x60, 0x64,
+	0x07, 0x2a, 0x13, 0x3e, 0x1c, 0x5b, 0x9a, 0x66, 0x06, 0xed, 0x43, 0x8d, 0x61, 0x90, 0x64, 0x03,
+	0xa1, 0x40, 0x72, 0x9a, 0xe6, 0x20, 0xf5, 0x5e, 0x49, 0x2d, 0x81, 0xf2, 0x80, 0x4b, 0x6e, 0x68,
+	0xd5, 0x6f, 0xfa, 0xcb, 0x81, 0x96, 0xbd, 0xd0, 0xbb, 0x58, 0x48, 0x1e, 0x07, 0xba, 0x63, 0x34,
+	0xe2, 0xa1, 0xad, 0x38, 0x33, 0x14, 0xcd, 0x23, 0x1c, 0x25, 0xd9, 0x54, 0x17, 0xad, 0x30, 0x63,
+	0xa9, 0xbb, 0x06, 0xe9, 0x58, 0x57, 0x5d, 0x67, 0xea, 0x49, 0xba, 0x50, 0xc6, 0x78, 0xa2, 0xce,
+	0x54, 0xea, 0x35, 0xf6, 0x37, 0xfc, 0xc2, 0x86, 0x4c, 0x47, 0x08, 0x85, 0x5a, 0x36, 0x9b, 0xde,
+	0xab, 0xe8, 0x24, 0xd7, 0x37, 0xdb, 0x30, 0x1b, 0x20, 0x0f, 0xc1, 0x0d, 0x94, 0x80, 0x32, 0x54,
+	0x67, 0x53, 0x49, 0x4d, 0x7f, 0x41, 0x51, 0x2c, 0x8f, 0xd3, 0x9f, 0x0e, 0xb8, 0xff, 0x28, 0xb4,
+	0x2e, 0x34, 0x8a, 0x87, 0x9e, 0x91, 0x52, 0x74, 0x91, 0x0e, 0xb8, 0x01, 0x97, 0x18, 0xaa, 0x95,
+	0xcb, 0x3a, 0x9c, 0xdb, 0x56, 0x73, 0x63, 0xa1, 0x35, 0x57, 0x61, 0xc6, 0x22, 0x8f, 0xc1, 0x8d,
+	0x0c, 0x8d, 0x66, 0xe8, 0x6d, 0x7f, 0x99, 0x5f, 0x96, 0xa7, 0xd0, 0x23, 0xd8, 0x39, 0x41, 0x69,
+	0x13, 0x04, 0x43, 0x91, 0x26, 0xb1, 0x40, 0x72, 0x1f, 0xea, 0xf6, 0x87, 0x25, 0x3c, 0x47, 0xd7,
+	0xa9, 0xe7, 0x75, 0xd8, 0x3c, 0x46, 0x1f, 0x81, 0x57, 0x28, 0xf0, 0x7a, 0x7a, 0xc6, 0x43, 0xc1,
+	0xf0, 0x72, 0x8c, 0x42, 0xce, 0x79, 0x28, 0x19, 0x1e, 0xe8, 0x21, 0xdc, 0x59, 0xc8, 0x3e, 0x36,
+	0xeb, 0x58, 0x44, 0x71, 0x63, 0x67, 0x71, 0x63, 0xfa, 0xdd, 0x81, 0xf6, 0x09, 0x4a, 0x03, 0x89,
+	0x0a, 0xc3, 0x1e, 0x01, 0x04, 0xb9, 0xd7, 0x4c, 0x7b, 0xcf, 0x5f, 0x99, 0xeb, 0xe7, 0x1d, 0x0b,
+	0x90, 0xce, 0x53, 0x70, 0xad, 0xff, 0x76, 0xc7, 0xa3, 0x17, 0x40, 0x5e, 0x0d, 0xe6, 0x42, 0x58,
+	0x5e, 0x38, 0xc7, 0x76, 0xa1, 0x61, 0x17, 0x38, 0xe3, 0xa1, 0x29, 0x51, 0x74, 0xa9, 0x1f, 0x68,
+	0x90, 0xc4, 0x12, 0x63, 0x69, 0x3f, 0x37, 0xc6, 0xa4, 0x87, 0xba, 0xc7, 0x32, 0x45, 0xb7, 0x9b,
+	0xaf, 0x05, 0x4d, 0xbb, 0xf2, 0xa9, 0x16, 0x06, 0xfd, 0x1f, 0xda, 0x1f, 0xd3, 0x01, 0x97, 0xb8,
+	0x34, 0xf4, 0x3c, 0xb0, 0xd4, 0x69, 0xff, 0x77, 0x09, 0x36, 0x6d, 0xf2, 0xa9, 0x4c, 0x32, 0x24,
+	0x4f, 0x60, 0xa3, 0xa8, 0x16, 0x52, 0xf5, 0xf5, 0xb7, 0xb6, 0xd3, 0xf6, 0x57, 0x89, 0x88, 0xae,
+	0x91, 0x13, 0xd8, 0xbe, 0xa2, 0x0e, 0xb2, 0xe7, 0x5f, 0xa7, 0x98, 0xeb, 0x0b, 0x7d, 0xd0, 0xb7,
+	0xbf, 0x2a, 0x1c, 0x72, 0xd7, 0xbf, 0x49, 0x50, 0xd7, 0x17, 0x7c, 0x06, 0x9b, 0x0b, 0x02, 0xc9,
+	0x77, 0xd9, 0x5d, 0x2d, 0x1c, 0xba, 0x46, 0x9e, 0x43, 0xa3, 0x70, 0x73, 0xf2, 0x9f, 0x7f, 0x55,
+	0x01, 0x9d, 0x2d, 0x7f, 0x89, 0x76, 0x0b, 0xcb, 0x07, 0xd6, 0xb0, 0xe5, 0x31, 0x57, 0xc0, 0x5e,
+	0x42, 0x73, 0xf1, 0x5e, 0x64, 0xd7, 0x5f, 0x79, 0xc0, 0x1b, 0xc1, 0x79, 0x5b, 0x0b, 0xfe, 0x7b,
+	0xe7, 0x8b, 0xaa, 0xfe, 0x27, 0x3d, 0xf8, 0x13, 0x00, 0x00, 0xff, 0xff, 0x4f, 0xf8, 0xb4, 0x35,
+	0x5b, 0x07, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -459,9 +902,12 @@ type ExerciseStoreClient interface {
 	GetExercises(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*GetExercisesResponse, error)
 	GetExerciseByTags(ctx context.Context, in *GetExerciseByTagsRequest, opts ...grpc.CallOption) (*GetExercisesResponse, error)
 	GetExerciseByCategory(ctx context.Context, in *GetExerciseByCategoryRequest, opts ...grpc.CallOption) (*GetExercisesResponse, error)
+	GetCategories(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*GetCategoriesResponse, error)
 	//todo future implementation, those will be managed by the webclient
 	AddExercise(ctx context.Context, in *AddExerciseRequest, opts ...grpc.CallOption) (*ResponseStatus, error)
+	AddCategory(ctx context.Context, in *AddCategoryRequest, opts ...grpc.CallOption) (*ResponseStatus, error)
 	UpdateExercise(ctx context.Context, in *UpdateExerciseRequest, opts ...grpc.CallOption) (*ResponseStatus, error)
+	UpdateCategory(ctx context.Context, in *UpdateCategoryRequest, opts ...grpc.CallOption) (*ResponseStatus, error)
 }
 
 type exerciseStoreClient struct {
@@ -499,9 +945,27 @@ func (c *exerciseStoreClient) GetExerciseByCategory(ctx context.Context, in *Get
 	return out, nil
 }
 
+func (c *exerciseStoreClient) GetCategories(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*GetCategoriesResponse, error) {
+	out := new(GetCategoriesResponse)
+	err := c.cc.Invoke(ctx, "/ExerciseStore/GetCategories", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *exerciseStoreClient) AddExercise(ctx context.Context, in *AddExerciseRequest, opts ...grpc.CallOption) (*ResponseStatus, error) {
 	out := new(ResponseStatus)
 	err := c.cc.Invoke(ctx, "/ExerciseStore/AddExercise", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *exerciseStoreClient) AddCategory(ctx context.Context, in *AddCategoryRequest, opts ...grpc.CallOption) (*ResponseStatus, error) {
+	out := new(ResponseStatus)
+	err := c.cc.Invoke(ctx, "/ExerciseStore/AddCategory", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -517,14 +981,26 @@ func (c *exerciseStoreClient) UpdateExercise(ctx context.Context, in *UpdateExer
 	return out, nil
 }
 
+func (c *exerciseStoreClient) UpdateCategory(ctx context.Context, in *UpdateCategoryRequest, opts ...grpc.CallOption) (*ResponseStatus, error) {
+	out := new(ResponseStatus)
+	err := c.cc.Invoke(ctx, "/ExerciseStore/UpdateCategory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ExerciseStoreServer is the server API for ExerciseStore service.
 type ExerciseStoreServer interface {
 	GetExercises(context.Context, *Empty) (*GetExercisesResponse, error)
 	GetExerciseByTags(context.Context, *GetExerciseByTagsRequest) (*GetExercisesResponse, error)
 	GetExerciseByCategory(context.Context, *GetExerciseByCategoryRequest) (*GetExercisesResponse, error)
+	GetCategories(context.Context, *Empty) (*GetCategoriesResponse, error)
 	//todo future implementation, those will be managed by the webclient
 	AddExercise(context.Context, *AddExerciseRequest) (*ResponseStatus, error)
+	AddCategory(context.Context, *AddCategoryRequest) (*ResponseStatus, error)
 	UpdateExercise(context.Context, *UpdateExerciseRequest) (*ResponseStatus, error)
+	UpdateCategory(context.Context, *UpdateCategoryRequest) (*ResponseStatus, error)
 }
 
 // UnimplementedExerciseStoreServer can be embedded to have forward compatible implementations.
@@ -540,11 +1016,20 @@ func (*UnimplementedExerciseStoreServer) GetExerciseByTags(ctx context.Context, 
 func (*UnimplementedExerciseStoreServer) GetExerciseByCategory(ctx context.Context, req *GetExerciseByCategoryRequest) (*GetExercisesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetExerciseByCategory not implemented")
 }
+func (*UnimplementedExerciseStoreServer) GetCategories(ctx context.Context, req *Empty) (*GetCategoriesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCategories not implemented")
+}
 func (*UnimplementedExerciseStoreServer) AddExercise(ctx context.Context, req *AddExerciseRequest) (*ResponseStatus, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddExercise not implemented")
 }
+func (*UnimplementedExerciseStoreServer) AddCategory(ctx context.Context, req *AddCategoryRequest) (*ResponseStatus, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddCategory not implemented")
+}
 func (*UnimplementedExerciseStoreServer) UpdateExercise(ctx context.Context, req *UpdateExerciseRequest) (*ResponseStatus, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateExercise not implemented")
+}
+func (*UnimplementedExerciseStoreServer) UpdateCategory(ctx context.Context, req *UpdateCategoryRequest) (*ResponseStatus, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateCategory not implemented")
 }
 
 func RegisterExerciseStoreServer(s *grpc.Server, srv ExerciseStoreServer) {
@@ -605,6 +1090,24 @@ func _ExerciseStore_GetExerciseByCategory_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExerciseStore_GetCategories_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExerciseStoreServer).GetCategories(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ExerciseStore/GetCategories",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExerciseStoreServer).GetCategories(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ExerciseStore_AddExercise_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AddExerciseRequest)
 	if err := dec(in); err != nil {
@@ -619,6 +1122,24 @@ func _ExerciseStore_AddExercise_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ExerciseStoreServer).AddExercise(ctx, req.(*AddExerciseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExerciseStore_AddCategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddCategoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExerciseStoreServer).AddCategory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ExerciseStore/AddCategory",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExerciseStoreServer).AddCategory(ctx, req.(*AddCategoryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -641,6 +1162,24 @@ func _ExerciseStore_UpdateExercise_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExerciseStore_UpdateCategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateCategoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExerciseStoreServer).UpdateCategory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ExerciseStore/UpdateCategory",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExerciseStoreServer).UpdateCategory(ctx, req.(*UpdateCategoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _ExerciseStore_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "ExerciseStore",
 	HandlerType: (*ExerciseStoreServer)(nil),
@@ -658,12 +1197,24 @@ var _ExerciseStore_serviceDesc = grpc.ServiceDesc{
 			Handler:    _ExerciseStore_GetExerciseByCategory_Handler,
 		},
 		{
+			MethodName: "GetCategories",
+			Handler:    _ExerciseStore_GetCategories_Handler,
+		},
+		{
 			MethodName: "AddExercise",
 			Handler:    _ExerciseStore_AddExercise_Handler,
 		},
 		{
+			MethodName: "AddCategory",
+			Handler:    _ExerciseStore_AddCategory_Handler,
+		},
+		{
 			MethodName: "UpdateExercise",
 			Handler:    _ExerciseStore_UpdateExercise_Handler,
+		},
+		{
+			MethodName: "UpdateCategory",
+			Handler:    _ExerciseStore_UpdateCategory_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

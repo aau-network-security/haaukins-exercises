@@ -20,6 +20,8 @@ type Store interface {
 	GetExercises() []model.Exercise
 	GetExercisesByTags([]string) ([]model.Exercise, error)
 	GetExerciseByCategory(string) ([]model.Exercise, error)
+	GetCategories() []model.Category
+	GetCategoryName(primitive.ObjectID) string
 	AddCategory(string, string) error
 	AddExercise(string, string, string) error
 }
@@ -103,6 +105,31 @@ func (s *store) GetExerciseByCategory(cat string) ([]model.Exercise, error) {
 	}
 
 	return exercises, nil
+}
+
+func (s *store) GetCategories() []model.Category {
+	s.m.RLock()
+	defer s.m.RUnlock()
+
+	var categ []model.Category
+	for _, c := range s.categs {
+		categ = append(categ, c)
+	}
+
+	return categ
+}
+
+func (s *store) GetCategoryName(obj primitive.ObjectID) string {
+	s.m.RLock()
+	defer s.m.RUnlock()
+
+	for _, c := range s.categs {
+		if c.ID == obj {
+			return string(c.Tag)
+		}
+	}
+
+	return ""
 }
 
 func (s *store) AddCategory(tag string, name string) error {
