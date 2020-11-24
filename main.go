@@ -1,37 +1,46 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net"
 
+	"github.com/aau-network-security/haaukins-exercises/server"
+
 	pb "github.com/aau-network-security/haaukins-exercises/proto"
-	"github.com/aau-network-security/haaukins-exercises/store"
-	"google.golang.org/grpc"
 )
 
-//todo add authentication
-type Server struct {
-	store store.Store
-}
+const (
+	defaultConfigFile = "config.yml"
+)
 
 func main() {
 
-	//todo create a read from config.yml file
+	confFilePtr := flag.String("config", defaultConfigFile, "configuration file")
+	flag.Parse()
 
-	sst, err := store.NewStore()
+	c, err := server.NewConfigFromFile(*confFilePtr)
 	if err != nil {
-		panic(err)
+		log.Fatalf("unable to read configuration file [%s]: %s", *confFilePtr, err)
 	}
 
-	s := &Server{store: sst}
+	s, err := server.NewServer(c)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	lis, err := net.Listen("tcp", ":9090")
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", c.Port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	gRPCServer := grpc.NewServer()
+	opts, err := s.GrpcOpts(c)
+	if err != nil {
+		log.Fatalf("failed to retrieve server options %s", err.Error())
+	}
+
+	gRPCServer := s.NewGRPCServer(opts...)
 	pb.RegisterExerciseStoreServer(gRPCServer, s)
 	fmt.Println("waiting client")
 	if err := gRPCServer.Serve(lis); err != nil {

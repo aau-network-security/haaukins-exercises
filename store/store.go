@@ -31,16 +31,15 @@ type store struct {
 	exs    map[model.Tag]model.Exercise
 }
 
-//todo pass config file to modify the connection parameters
-func NewStore() (Store, error) {
+func NewStore(host string, port uint, user string, pass string) (Store, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().
-		ApplyURI("mongodb://localhost:27017").
+		ApplyURI(fmt.Sprintf("mongodb://%s:%d", host, port)).
 		SetAuth(options.Credential{
-			Username: "root",
-			Password: "toor",
+			Username: user,
+			Password: pass,
 		}))
 	if err != nil {
 		return nil, err
