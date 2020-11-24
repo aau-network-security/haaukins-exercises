@@ -6,6 +6,10 @@ import (
 	"sync"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"go.mongodb.org/mongo-driver/bson"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -16,6 +20,8 @@ type Store interface {
 	GetExercises() []model.Exercise
 	GetExercisesByTags([]string) ([]model.Exercise, error)
 	GetExerciseByCategory(string) ([]model.Exercise, error)
+	AddCategory(string, string) error
+	AddExercise(string, string, string) error
 }
 
 type store struct {
@@ -98,4 +104,75 @@ func (s *store) GetExerciseByCategory(cat string) ([]model.Exercise, error) {
 	}
 
 	return exercises, nil
+}
+
+func (s *store) AddCategory(tag string, name string) error {
+	s.m.Lock()
+	defer s.m.Unlock()
+
+	categoryTag := model.Tag(tag)
+	_, ok := s.categs[categoryTag]
+	if ok {
+		return fmt.Errorf("category already exists")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	collection := s.db.Database(DB_NAME).Collection(CAT_COLLECTION)
+
+	category := model.Category{
+		Tag:  categoryTag,
+		Name: name,
+	}
+	_, err := collection.InsertOne(ctx, category)
+	if err != nil {
+		return err
+	}
+
+	s.categs[categoryTag] = category
+	return nil
+}
+
+func (s *store) AddExercise(tag string, content string, catTag string) error {
+	s.m.Lock()
+	defer s.m.Unlock()
+
+	_, ok := s.exs[model.Tag(tag)]
+	if ok {
+		return fmt.Errorf("exercise already exists")
+	}
+
+	collection := s.db.Database(DB_NAME).Collection(CAT_COLLECTION)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var categ model.Category
+	c := collection.FindOne(ctx, bson.M{"tag": bson.M{"$eq": catTag}})
+	if err := c.Decode(&categ); err != nil {
+		return err
+	}
+
+	var ex model.Exercise
+	if err := bson.UnmarshalExtJSON([]byte(content), false, &ex); err != nil {
+		return err
+	}
+
+	ex.ID = primitive.NewObjectID()
+	ex.Tag = model.Tag(tag)
+	ex.Category = categ.ID
+
+	if err := checkExerciseFields(ex); err != nil {
+		return err
+	}
+
+	collection = s.db.Database(DB_NAME).Collection(EXER_COLLECTION)
+	_, err := collection.InsertOne(ctx, ex)
+	if err != nil {
+		return err
+	}
+
+	s.exs[model.Tag(tag)] = ex
+
+	return nil
 }

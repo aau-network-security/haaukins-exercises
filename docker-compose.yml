@@ -16,13 +16,15 @@ services:
   mongo:
     image: mongo
     restart: always
+    env_file:
+      - .env
     ports:
       - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: toor
     volumes:
-      - mongo-data-dev:/data/db     #change into host volume
+      - ${MONGO_DATA_PATH}:/data/db
     networks:
       - internal
 
@@ -38,9 +40,6 @@ services:
       ME_CONFIG_BASICAUTH_PASSWORD: secret
     networks:
       - internal
-
-volumes:
-  mongo-data-dev:
 
 networks:
   internal:

@@ -37,7 +37,7 @@ func AddRandomData() error {
 	collection := client.Database(DB_NAME).Collection(CAT_COLLECTION)
 
 	//Skip the function if there are already categories and exercises in the DB
-	countDocuments, err := collection.CountDocuments(ctx, nil, nil)
+	countDocuments, err := collection.EstimatedDocumentCount(ctx, nil, nil)
 	if countDocuments > 0 {
 		return nil
 	}
@@ -135,8 +135,14 @@ func TestStore_GetExercisesByTags(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			exers, err := s.GetExercisesByTags(tc.tags)
-			if err != nil && !tc.err {
+			if err != nil {
+				if tc.err {
+					return
+				}
 				t.Fatalf("Error get exercises: %v", err)
+			}
+			if tc.err {
+				t.Fatal("Error expected")
 			}
 			if len(exers) != tc.expected {
 				t.Fatalf("Expected number of challenges %d, got %d", tc.expected, len(exers))
@@ -169,12 +175,100 @@ func TestStore_GetExerciseByCategory(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			exers, err := s.GetExerciseByCategory(tc.categ)
-			if err != nil && !tc.err {
+			if err != nil {
+				if tc.err {
+					return
+				}
 				t.Fatalf("Error get exercises: %v", err)
+			}
+			if tc.err {
+				t.Fatal("Error expected")
 			}
 			if len(exers) != tc.expected {
 				t.Fatalf("Expected number of challenges %d, got %d", tc.expected, len(exers))
 			}
 		})
+	}
+}
+
+func TestStore_AddCategory(t *testing.T) {
+	if err := AddRandomData(); err != nil {
+		t.Fatalf("Error adding random data to the db: %v", err)
+	}
+
+	s, err := NewStore()
+	if err != nil {
+		t.Fatalf("Error creating the store: %v", err)
+	}
+
+	tt := []struct {
+		name  string
+		categ string
+		err   bool
+	}{
+		{name: "Normal category", categ: "new"},
+		{name: "Already existing category", categ: NCategories[0], err: true},
+		{name: "Normal category 2", categ: "new", err: true},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := s.AddCategory(tc.categ, tc.categ); err != nil {
+				if tc.err {
+					return
+				}
+				t.Fatalf("Error insert category: %v", err)
+			}
+			if tc.err {
+				t.Fatal("Error expected")
+			}
+		})
+	}
+}
+
+func TestStore_AddExercise(t *testing.T) {
+	if err := AddRandomData(); err != nil {
+		t.Fatalf("Error adding random data to the db: %v", err)
+	}
+
+	s, err := NewStore()
+	if err != nil {
+		t.Fatalf("Error creating the store: %v", err)
+	}
+
+	tt := []struct {
+		name    string
+		tag     string
+		content string
+		categ   string
+		err     bool
+	}{
+		{name: "Normal Exercise", tag: "random", content: `{"tag": "random","name": "random","instance": [{"image": "ftp","flags": [{"tag": "ftp","name": "ftp","env": "FLAG"}]}]}`, categ: "binary"},
+		{name: "Already Existing Exercise", tag: "random", content: `{"tag": "random","name": "random","instance": [{"image": "ftp","flags": [{"tag": "ftp","name": "ftp","env": "FLAG"}]}]}`, categ: "binary", err: true},
+		{name: "Missing Name", tag: "test1", content: `{"tag": "random","instance": [{"image": "ftp","flags": [{"tag": "ftp","name": "ftp","env": "FLAG"}]}]}`, categ: "binary", err: true},
+		{name: "Missing Instance", tag: "test2", content: `{"tag": "random","name": "random"}`, categ: "binary", err: true},
+		{name: "Missing Children", tag: "test3", content: `{"tag": "random","name": "random","instance": [{"image": "ftp"}]}`, categ: "binary", err: true},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := s.AddExercise(tc.tag, tc.content, tc.categ); err != nil {
+				if tc.err {
+					return
+				}
+				t.Fatalf("error insert exercise: %s", err.Error())
+			}
+			if tc.err {
+				t.Fatal("Error expected")
+			}
+		})
+	}
+
+	exs, err := s.GetExercisesByTags([]string{"random"})
+	if err != nil {
+		t.Fatalf("error get exercise: %s", err.Error())
+	}
+	if len(exs) != 1 {
+		t.Fatal("error, expected an exercise...")
 	}
 }
