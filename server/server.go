@@ -16,6 +16,11 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const (
+	DEFAULT_AUTH = "authkey"
+	DEFAULT_SIGN = "signkey"
+)
+
 type Server struct {
 	store store.Store
 	auth  Authenticator
@@ -159,12 +164,12 @@ func NewConfigFromFile(path string) (*Config, error) {
 
 	if c.SigninKey == "" {
 		log.Println("DBG signinKey not provided in the configuration file")
-		c.Host = "signin"
+		c.SigninKey = DEFAULT_SIGN
 	}
 
 	if c.AuthKey == "" {
 		log.Println("DBG authKey not provided in the configuration file")
-		c.Host = "auth"
+		c.AuthKey = DEFAULT_AUTH
 	}
 
 	if c.DB.Host == "" || c.DB.User == "" || c.DB.Pass == "" {
