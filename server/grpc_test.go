@@ -14,8 +14,7 @@ import (
 )
 
 var (
-	NExercises  = []string{"ftp", "xxs", "xxe", "sql", "mitm", "crypto", "shad", "rand", "ccs"}
-	NCategories = []string{"forensics", "binary"}
+	NExercises = []string{"ftp", "xxs", "xxe", "sql", "mitm", "crypto", "shad", "rand", "ccs"}
 )
 
 func createTestClientConn() (*grpc.ClientConn, error) {
@@ -119,8 +118,8 @@ func TestServer_GetCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(resp.Categories) != len(NCategories) {
-		t.Fatalf("Expected number of category %d, got %d", len(NCategories), len(resp.Categories))
+	if len(resp.Categories) != 3 { //3 is the number of category that should be in the DB 2 + 1 inserted in the store test file
+		t.Fatalf("Expected number of category %d, got %d", 3, len(resp.Categories))
 	}
 }
 
