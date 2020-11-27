@@ -1,4 +1,5 @@
-# haaukins-exercises
+# haaukins-exercises [![Build Status](https://github.com/aau-network-security/haaukins-exercises/workflows/test/badge.svg)](https://github.com/aau-network-security/haaukins-exercises/actions)
+
 Haaukins microservice that store all the CTF challenges
 
 ### Configuration

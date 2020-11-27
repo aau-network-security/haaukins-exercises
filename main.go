@@ -42,7 +42,7 @@ func main() {
 
 	gRPCServer := s.NewGRPCServer(opts...)
 	pb.RegisterExerciseStoreServer(gRPCServer, s)
-	fmt.Println("waiting client")
+	log.Printf("INFO server waiting for clients on port %d", c.Port)
 	if err := gRPCServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

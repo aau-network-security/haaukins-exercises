@@ -16,6 +16,11 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const (
+	DEFAULT_AUTH = "authkey"
+	DEFAULT_SIGN = "signkey"
+)
+
 type Server struct {
 	store store.Store
 	auth  Authenticator
@@ -74,14 +79,14 @@ func (s *Server) GrpcOpts(conf *Config) ([]grpc.ServerOption, error) {
 		if err != nil {
 			return []grpc.ServerOption{}, errors.New("Error on retrieving certificates: " + err.Error())
 		}
-		log.Printf("Server is running in secure mode !")
+		log.Printf("INFO server is running in secure mode !")
 		return []grpc.ServerOption{grpc.Creds(creds)}, nil
 	}
 	return []grpc.ServerOption{}, nil
 }
 
 func GetCreds(conf *Config) (credentials.TransportCredentials, error) {
-	log.Printf("Preparing credentials for RPC")
+	log.Printf("INFO preparing credentials for RPC")
 
 	certificateProps := certificate{
 		cPath:    conf.TLS.CertFile,
@@ -148,23 +153,23 @@ func NewConfigFromFile(path string) (*Config, error) {
 	}
 
 	if c.Host == "" {
-		log.Println("Host not provided in the configuration file")
+		log.Println("DBG host not provided in the configuration file")
 		c.Host = "localhost"
 	}
 
 	if c.Port == 0 {
-		log.Println("Port not provided in the configuration file")
+		log.Println("DBGpPort not provided in the configuration file")
 		c.Port = 50095
 	}
 
 	if c.SigninKey == "" {
-		log.Println("SigninKey not provided in the configuration file")
-		c.Host = "signin"
+		log.Println("DBG signinKey not provided in the configuration file")
+		c.SigninKey = DEFAULT_SIGN
 	}
 
 	if c.AuthKey == "" {
-		log.Println("AuthKey not provided in the configuration file")
-		c.Host = "auth"
+		log.Println("DBG authKey not provided in the configuration file")
+		c.AuthKey = DEFAULT_AUTH
 	}
 
 	if c.DB.Host == "" || c.DB.User == "" || c.DB.Pass == "" {

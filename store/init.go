@@ -19,7 +19,7 @@ const (
 //init the store cache
 func (s *store) initStore() error {
 
-	log.Print("Initialising the Cache")
+	log.Print("INFO initialising the Cache")
 	exs, err := s.getExercises()
 	if err != nil {
 		return err
@@ -38,6 +38,8 @@ func (s *store) initStore() error {
 		s.categs[c.Tag] = c
 	}
 
+	log.Printf("INFO exercises added in the cache [%d]", len(s.exs))
+	log.Printf("INFO categories added in the cache [%d]", len(s.categs))
 	return nil
 }
 

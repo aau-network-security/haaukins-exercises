@@ -17,7 +17,7 @@ jobs:
           MONGO_INITDB_ROOT_USERNAME: root
           MONGO_INITDB_ROOT_PASSWORD: toor
         ports:
-          -  27017:27017
+          - 27017:27017
     
     steps:
 
@@ -37,5 +37,30 @@ jobs:
             dep ensure
         fi
 
-    - name: Run Tests
-      run: go test -race -v ./...
+    - name: Run Store tests
+      run: go test -race -v ./store
+
+    - name: Download Files for the Server
+      run: |
+        curl -o config.yml      https://gist.githubusercontent.com/gianmarcomennecozzi/2cbb0d253efeaf8c3c6b609753de9e44/raw/ead8a8e8335014d8265abd0c7054358abd53d83a/config.yml
+        curl -o ca.pem          https://gist.githubusercontent.com/gianmarcomennecozzi/00f88e92600736ef333481f00ff3e38b/raw/b3a6cbe2ba5f083548a79a43788390bc9dabb4cc/ca.pem
+        curl -o localhost.key   https://gist.githubusercontent.com/gianmarcomennecozzi/c40faaf6c1d6f2b823a042295603c5c3/raw/05508fc3360f49b12b07ed3a3269ddce81b48a1d/localhost.key
+        curl -o localhost.crt   https://gist.githubusercontent.com/gianmarcomennecozzi/61898a156f0d87ebcc3793baacd11041/raw/aa0caff4f8481f296e16214cfd000b7f8d173544/localhost.crt
+
+    - name: Build and Run Server
+      run: |
+        go build -o app .
+        chmod +x ./app
+        ./app &
+
+    - name: Run Server tests
+      run: go test -v ./server
+      env:
+        CERT: ./../localhost.crt
+        CERT_KEY: ./../localhost.key
+        CA: ./../ca.pem
+
+    - name: Teardown resources
+      run : |
+        rm -rf config.yml
+        rm -rf *.crt *.key *.pem

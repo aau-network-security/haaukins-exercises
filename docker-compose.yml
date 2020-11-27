@@ -11,6 +11,7 @@ services:
     depends_on:
       - mongo
     volumes:
+      - ${CERTS_PATH}:/certs:ro
       - ${CONFIG_PATH}:/config.yml:ro  # mount config file
     networks:
       - internal
