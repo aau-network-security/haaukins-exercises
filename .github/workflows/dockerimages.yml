@@ -18,13 +18,3 @@ jobs:
           repository: aaunetworksecurity/haaukins-exercises
           tag_with_ref: true
           tag_with_sha: true
-
-      - name: Push Docker image to GitHub Packages
-        uses: docker/build-push-action@v1
-        with:
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          registry: docker.pkg.github.com
-          repository: aau-network-security/haaukins-exercises/haau-exs-server
-          tag_with_ref: true
-          tag_with_sha: true
