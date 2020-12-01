@@ -4,7 +4,7 @@ services:
     container_name: haaukins-exercises
     env_file:
       - .env
-    image: aaunetworksecurity/haaukins-exercises:latest
+    build: .
     ports:
       - 50095:50095
     restart: on-failure
@@ -24,9 +24,22 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - ${MONGO_DATA_PATH}:/data/db
+      - data:/data/db
     networks:
       - internal
+
+  mongo-express:
+    image: mongo-express
+    env_file:
+      - .env
+    restart: always
+    ports:
+      - "8081:8081"
+    networks:
+      - internal
+
+volumes:
+  data:
 
 networks:
   internal:
