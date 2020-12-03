@@ -38,15 +38,13 @@ func (s *store) initStore() error {
 		s.categs[c.Tag] = c
 	}
 
-	log.Printf("INFO exercises added in the cache [%d]", len(s.exs))
-	log.Printf("INFO categories added in the cache [%d]", len(s.categs))
+	log.Printf("INFO exercises present in the cache [%d]", len(s.exs))
+	log.Printf("INFO categories present in the cache [%d]", len(s.categs))
 	return nil
 }
 
 //Get Categories from the DB
 func (s *store) getCategory() ([]model.Category, error) {
-	s.m.Lock()
-	defer s.m.Unlock()
 
 	collection := s.db.Database(DB_NAME).Collection(CAT_COLLECTION)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -75,8 +73,6 @@ func (s *store) getCategory() ([]model.Category, error) {
 
 //Get exercises from the DB
 func (s *store) getExercises() ([]model.Exercise, error) {
-	s.m.Lock()
-	defer s.m.Unlock()
 
 	collection := s.db.Database(DB_NAME).Collection(EXER_COLLECTION)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

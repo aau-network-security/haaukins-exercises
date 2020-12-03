@@ -125,6 +125,14 @@ func (s *Server) AddExercise(ctx context.Context, request *pb.AddExerciseRequest
 	return &pb.ResponseStatus{}, nil
 }
 
+func (s *Server) UpdateStatus(ctx context.Context, empty *pb.Empty) (*pb.ResponseStatus, error) {
+	log.Print("UPDATE STATUS")
+	if err := s.store.UpdateCache(); err != nil {
+		return nil, err
+	}
+	return &pb.ResponseStatus{}, nil
+}
+
 func (s *Server) UpdateExercise(ctx context.Context, request *pb.UpdateExerciseRequest) (*pb.ResponseStatus, error) {
 	panic("implement me")
 }

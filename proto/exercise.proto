@@ -6,6 +6,8 @@ service ExerciseStore{
     rpc GetExerciseByCategory(GetExerciseByCategoryRequest) returns (GetExercisesResponse) {}
     rpc GetCategories(Empty) returns (GetCategoriesResponse) {}
 
+    rpc UpdateStatus(Empty) returns (ResponseStatus) {}
+
     //todo future implementation, those will be managed by the webclient
     rpc AddExercise(AddExerciseRequest) returns (ResponseStatus) {}
     rpc AddCategory(AddCategoryRequest) returns (ResponseStatus) {}

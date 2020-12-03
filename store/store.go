@@ -24,6 +24,7 @@ type Store interface {
 	GetCategoryName(primitive.ObjectID) string
 	AddCategory(string, string) error
 	AddExercise(string, string, string) error
+	UpdateCache() error
 }
 
 type store struct {
@@ -201,4 +202,14 @@ func (s *store) AddExercise(tag string, content string, catTag string) error {
 	s.exs[model.Tag(tag)] = ex
 
 	return nil
+}
+
+//Used when someone manually change something in the DB
+func (s *store) UpdateCache() error {
+	s.m.Lock()
+	defer s.m.Unlock()
+
+	s.categs = make(map[model.Tag]model.Category)
+	s.exs = make(map[model.Tag]model.Exercise)
+	return s.initStore()
 }
