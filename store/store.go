@@ -6,10 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
-
 	"go.mongodb.org/mongo-driver/bson"
-
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -149,8 +147,8 @@ func (s *store) AddCategory(tag string, name string) error {
 	collection := s.db.Database(DB_NAME).Collection(CAT_COLLECTION)
 
 	category := model.Category{
-		Tag:  categoryTag,
-		Name: name,
+		Tag:  categoryTag, // FR,
+		Name: name,        // Forensics,
 	}
 	_, err := collection.InsertOne(ctx, category)
 	if err != nil {
@@ -182,6 +180,7 @@ func (s *store) AddExercise(tag string, content string, catTag string) error {
 
 	var ex model.Exercise
 	if err := bson.UnmarshalExtJSON([]byte(content), false, &ex); err != nil {
+		fmt.Printf("ERROR: %v", err)
 		return err
 	}
 
