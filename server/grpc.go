@@ -118,8 +118,8 @@ func (s *Server) AddCategory(ctx context.Context, request *pb.AddCategoryRequest
 }
 
 func (s *Server) AddExercise(ctx context.Context, request *pb.AddExerciseRequest) (*pb.ResponseStatus, error) {
-	log.Printf("ADD exercise [%s]", request.Tag)
-	if err := s.store.AddExercise(request.Tag, request.Content, request.CategoryTag); err != nil {
+	log.Printf("Add exercise")
+	if err := s.store.AddExercise(request.Content); err != nil {
 		return nil, err
 	}
 	return &pb.ResponseStatus{}, nil
@@ -131,12 +131,4 @@ func (s *Server) UpdateStatus(ctx context.Context, empty *pb.Empty) (*pb.Respons
 		return nil, err
 	}
 	return &pb.ResponseStatus{}, nil
-}
-
-func (s *Server) UpdateExercise(ctx context.Context, request *pb.UpdateExerciseRequest) (*pb.ResponseStatus, error) {
-	panic("implement me")
-}
-
-func (s *Server) UpdateCategory(ctx context.Context, request *pb.UpdateCategoryRequest) (*pb.ResponseStatus, error) {
-	panic("implement me")
 }
