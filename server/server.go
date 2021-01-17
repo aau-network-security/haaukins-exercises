@@ -2,10 +2,7 @@ package server
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 
@@ -68,7 +65,6 @@ func (s *Server) NewGRPCServer(opts ...grpc.ServerOption) *grpc.Server {
 type certificate struct {
 	cPath    string
 	cKeyPath string
-	caPath   string
 }
 
 func (s *Server) GrpcOpts(conf *Config) ([]grpc.ServerOption, error) {
@@ -91,33 +87,12 @@ func GetCreds(conf *Config) (credentials.TransportCredentials, error) {
 	certificateProps := certificate{
 		cPath:    conf.TLS.CertFile,
 		cKeyPath: conf.TLS.CertKey,
-		caPath:   conf.TLS.CAFile,
 	}
 
-	certificate, err := tls.LoadX509KeyPair(certificateProps.cPath, certificateProps.cKeyPath)
+	creds, err := credentials.NewServerTLSFromFile(certificateProps.cPath, certificateProps.cKeyPath)
 	if err != nil {
-		return nil, fmt.Errorf("could not load server key pair: %s", err)
+		return nil, err
 	}
-
-	// Create a certificate pool from the certificate authority
-	certPool := x509.NewCertPool()
-	ca, err := ioutil.ReadFile(certificateProps.caPath)
-	if err != nil {
-		return nil, fmt.Errorf("could not read ca certificate: %s", err)
-	}
-	// CA file for let's encrypt is located under domain conf as `chain.pem`
-	// pass chain.pem location
-	// Append the client certificates from the CA
-	if ok := certPool.AppendCertsFromPEM(ca); !ok {
-		return nil, errors.New("failed to append client certs")
-	}
-
-	// Create the TLS credentials
-	creds := credentials.NewTLS(&tls.Config{
-		ClientAuth:   tls.RequireAndVerifyClientCert,
-		Certificates: []tls.Certificate{certificate},
-		ClientCAs:    certPool,
-	})
 	return creds, nil
 }
 

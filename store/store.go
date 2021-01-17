@@ -3,6 +3,8 @@ package store
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
 	"sync"
 	"time"
 
@@ -21,7 +23,7 @@ type Store interface {
 	GetCategories() []model.Category
 	GetCategoryName(primitive.ObjectID) string
 	AddCategory(string, string) error
-	AddExercise(string, string, string) error
+	AddExercise(string) error
 	UpdateCache() error
 }
 
@@ -159,46 +161,55 @@ func (s *store) AddCategory(tag string, name string) error {
 	return nil
 }
 
-func (s *store) AddExercise(tag string, content string, catTag string) error {
+// AddExercise updates the challenge if any
+// Otherwise adds to collection
+func (s *store) AddExercise(content string) error {
 	s.m.Lock()
 	defer s.m.Unlock()
-
-	_, ok := s.exs[model.Tag(tag)]
-	if ok {
-		return fmt.Errorf("exercise already exists")
-	}
-
-	collection := s.db.Database(DB_NAME).Collection(CAT_COLLECTION)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
-	var categ model.Category
-	c := collection.FindOne(ctx, bson.M{"tag": bson.M{"$eq": catTag}})
-	if err := c.Decode(&categ); err != nil {
-		return err
-	}
+	excollect := s.db.Database(DB_NAME).Collection(EXER_COLLECTION)
 
 	var ex model.Exercise
 	if err := bson.UnmarshalExtJSON([]byte(content), false, &ex); err != nil {
 		fmt.Printf("ERROR: %v", err)
 		return err
 	}
+	tags := strings.Split(string(ex.Tag), "_")
+	if len(tags) != 2 {
+		return fmt.Errorf("The tag of the challenge does not match with requirements !")
+	}
+	catTag := strings.ToUpper(tags[0])
+	tag := model.Tag(tags[1])
+	collection := s.db.Database(DB_NAME).Collection(CAT_COLLECTION)
+	var categ model.Category
+
+	c := collection.FindOne(ctx, bson.M{"tag": bson.M{"$eq": catTag}})
+	if err := c.Decode(&categ); err != nil {
+		return err
+	}
 
 	ex.ID = primitive.NewObjectID()
-	ex.Tag = model.Tag(tag)
+	ex.Tag = tag
 	ex.Category = categ.ID
 
 	if err := checkExerciseFields(ex); err != nil {
 		return err
 	}
 
-	collection = s.db.Database(DB_NAME).Collection(EXER_COLLECTION)
-	_, err := collection.InsertOne(ctx, ex)
+	_, ok := s.exs[tag]
+	if ok {
+		log.Printf("exercise is already exists, updating the document ! ")
+		// update the exercise if it is already in the database
+		excollect.DeleteOne(ctx, bson.M{"tag": bson.M{"$eq": tag}})
+	}
+
+	_, err := excollect.InsertOne(ctx, ex)
 	if err != nil {
 		return err
 	}
 
-	s.exs[model.Tag(tag)] = ex
+	s.exs[tag] = ex
 
 	return nil
 }
