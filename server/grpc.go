@@ -26,6 +26,7 @@ func (s *Server) parseExercise(exercisesStore []model.Exercise) []*pb.Exercise {
 					Name:                 x.Name,
 					EnvFlag:              x.EnvVar,
 					Points:               int32(x.Points),
+					Category:             x.Category,
 					TeamDescription:      x.TeamDescription,
 					OrganizerDescription: x.TeamDescription,
 					Prerequisite:         x.PreRequisites,
