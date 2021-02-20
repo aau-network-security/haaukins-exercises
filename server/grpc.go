@@ -61,6 +61,7 @@ func (s *Server) parseExercise(exercisesStore []model.Exercise) []*pb.Exercise {
 		exercises = append(exercises, &pb.Exercise{
 			Tag:      string(e.Tag),
 			Name:     e.Name,
+			Secret:   e.Secret,
 			Status:   int32(e.Status),
 			Category: s.store.GetCategoryName(e.Category),
 			Instance: instance,
