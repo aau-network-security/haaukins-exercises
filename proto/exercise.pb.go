@@ -354,6 +354,7 @@ type Exercise struct {
 	Category             string              `protobuf:"bytes,4,opt,name=category,proto3" json:"category,omitempty"`
 	Status               int32               `protobuf:"varint,5,opt,name=status,proto3" json:"status,omitempty"`
 	Instance             []*ExerciseInstance `protobuf:"bytes,6,rep,name=instance,proto3" json:"instance,omitempty"`
+	Secret               bool                `protobuf:"varint,7,opt,name=secret,proto3" json:"secret,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
 	XXX_unrecognized     []byte              `json:"-"`
 	XXX_sizecache        int32               `json:"-"`
@@ -424,6 +425,13 @@ func (m *Exercise) GetInstance() []*ExerciseInstance {
 		return m.Instance
 	}
 	return nil
+}
+
+func (m *Exercise) GetSecret() bool {
+	if m != nil {
+		return m.Secret
+	}
+	return false
 }
 
 type GetExercisesResponse struct {

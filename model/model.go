@@ -16,6 +16,7 @@ type Exercise struct {
 	Category primitive.ObjectID       `bson:"categoryid,omitempty"`
 	Tag      Tag                      `bson:"tag,omitempty"`
 	Name     string                   `bson:"name,omitempty"`
+	Secret   bool                     `bson:"secret,omitempty"`
 	Instance []ExerciseInstanceConfig `bson:"instance,omitempty"`
 	Status   int                      `bson:"status"`
 }
