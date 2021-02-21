@@ -34,7 +34,7 @@ type FlagConfig struct {
 	Tag             Tag      `bson:"tag,omitempty"`
 	Name            string   `bson:"name,omitempty"`
 	EnvVar          string   `bson:"env,omitempty"`
-	StaticFlag      string   `bson:"static_flag,omitempty"`
+	StaticFlag      string   `bson:"static,omitempty"`
 	Points          uint     `bson:"points,omitempty"`
 	Category        string   `bson:"category,omitempty"`
 	TeamDescription string   `bson:"td,omitempty"`
