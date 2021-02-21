@@ -28,7 +28,7 @@ func (s *Server) parseExercise(exercisesStore []model.Exercise) []*pb.Exercise {
 					Points:               int32(x.Points),
 					Category:             x.Category,
 					TeamDescription:      x.TeamDescription,
-					OrganizerDescription: x.TeamDescription,
+					OrganizerDescription: x.OrgDescription,
 					Prerequisite:         x.PreRequisites,
 					Outcome:              x.Outcomes,
 				})
