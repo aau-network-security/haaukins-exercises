@@ -171,6 +171,8 @@ func (s *store) AddExercise(content string) error {
 	excollect := s.db.Database(DB_NAME).Collection(EXER_COLLECTION)
 
 	var ex model.Exercise
+	// by default exercise will be in staging mode
+	ex.Status = 1
 	if err := bson.UnmarshalExtJSON([]byte(content), false, &ex); err != nil {
 		fmt.Printf("ERROR: %v", err)
 		return err
