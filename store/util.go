@@ -7,40 +7,40 @@ import (
 )
 
 var (
-	errorMissingTagName        = fmt.Errorf("error! tag or exercise name is missing")
-	errorMissingInstance       = fmt.Errorf("error! there should be at the least an instance")
-	errorMissingImage          = fmt.Errorf("error! instance image empty")
-	errorMissingFlagConfig     = fmt.Errorf("error! there should be at the least a child in an instance")
-	errorMissingExerciseFields = fmt.Errorf("error! not all the required fields in a child are present")
+	MissingTagNameErr        = fmt.Errorf("error! tag or exercise name is missing")
+	MissingInstanceErr       = fmt.Errorf("error! there should be at the least an instance")
+	MissingImageErr          = fmt.Errorf("error! instance image empty")
+	MissingFlagConfigErr     = fmt.Errorf("error! there should be at the least a child in an instance")
+	MissingExerciseFieldsErr = fmt.Errorf("error! not all the required fields in a child are present")
 )
 
 func checkExerciseFields(ex model.Exercise) error {
 
 	if ex.Name == "" || string(ex.Tag) == "" {
-		return errorMissingTagName
+		return MissingTagNameErr
 	}
 
 	if len(ex.Instance) == 0 {
-		return errorMissingInstance
+		return MissingInstanceErr
 	}
 
 	//todo the checks can be extended to other variable as well
 	flags := 0
 	for _, i := range ex.Instance {
 		if i.Image == "" {
-			return errorMissingImage
+			return MissingImageErr
 		}
 
 		flags += len(i.Flags)
 		for _, f := range i.Flags {
-			if string(f.Tag) == "" || f.Name == "" || f.EnvVar == "" {
-				return errorMissingExerciseFields
+			if string(f.Tag) == "" || f.Name == "" || (f.EnvVar == "" && f.StaticFlag == "") {
+				return MissingExerciseFieldsErr
 			}
 		}
 	}
 
 	if flags == 0 {
-		return errorMissingFlagConfig
+		return MissingFlagConfigErr
 	}
 
 	return nil
