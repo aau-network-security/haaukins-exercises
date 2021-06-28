@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 
+	pb "github.com/aau-network-security/haaukins-exercises/proto"
 	"github.com/aau-network-security/haaukins-exercises/store"
 
 	"google.golang.org/grpc"
@@ -22,6 +23,7 @@ type Server struct {
 	store store.Store
 	auth  Authenticator
 	tls   bool
+	pb.UnimplementedExerciseStoreServer
 }
 
 func NewServer(conf *Config) (*Server, error) {
