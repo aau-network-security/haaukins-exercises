@@ -12,13 +12,14 @@ type Category struct {
 
 //todo manage the status somehow
 type Exercise struct {
-	ID       primitive.ObjectID       `bson:"_id,omitempty"`
-	Category primitive.ObjectID       `bson:"categoryid,omitempty"`
-	Tag      Tag                      `bson:"tag,omitempty"`
-	Name     string                   `bson:"name,omitempty"`
-	Secret   bool                     `bson:"secret,omitempty"`
-	Instance []ExerciseInstanceConfig `bson:"instance,omitempty"`
-	Status   int                      `bson:"status"`
+	ID             primitive.ObjectID       `bson:"_id,omitempty"`
+	Category       primitive.ObjectID       `bson:"categoryid,omitempty"`
+	Tag            Tag                      `bson:"tag,omitempty"`
+	Name           string                   `bson:"name,omitempty"`
+	Secret         bool                     `bson:"secret,omitempty"`
+	Instance       []ExerciseInstanceConfig `bson:"instance,omitempty"`
+	Status         int                      `bson:"status"`
+	OrgDescription string                   `bson:"od,omitempty"`
 }
 
 type ExerciseInstanceConfig struct {
@@ -38,7 +39,6 @@ type FlagConfig struct {
 	Points          uint     `bson:"points,omitempty"`
 	Category        string   `bson:"category,omitempty"`
 	TeamDescription string   `bson:"td,omitempty"`
-	OrgDescription  string   `bson:"od,omitempty"`
 	PreRequisites   []string `bson:"reqs,omitempty"`
 	Outcomes        []string `bson:"outc,omitempty"`
 }
