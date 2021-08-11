@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	jwt "github.com/dgrijalva/jwt-go"
+	jwt "github.com/golang-jwt/jwt/v4"
 	"google.golang.org/grpc/metadata"
 )
 
