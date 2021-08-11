@@ -29,7 +29,6 @@ func (s *Server) parseExercise(exercisesStore []model.Exercise) []*pb.Exercise {
 					Static:               x.StaticFlag,
 					Category:             x.Category,
 					TeamDescription:      x.TeamDescription,
-					OrganizerDescription: x.OrgDescription,
 					Prerequisite:         x.PreRequisites,
 					Outcome:              x.Outcomes,
 				})
@@ -67,6 +66,7 @@ func (s *Server) parseExercise(exercisesStore []model.Exercise) []*pb.Exercise {
 			Status:   int32(e.Status),
 			Category: s.store.GetCategoryName(e.Category),
 			Instance: instance,
+			OrganizerDescription: e.OrgDescription,
 		})
 	}
 	return exercises

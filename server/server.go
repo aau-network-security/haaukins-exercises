@@ -8,7 +8,6 @@ import (
 
 	pb "github.com/aau-network-security/haaukins-exercises/proto"
 	"github.com/aau-network-security/haaukins-exercises/store"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"gopkg.in/yaml.v2"

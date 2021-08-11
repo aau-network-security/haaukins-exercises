@@ -24,9 +24,8 @@ message ChildExercise{
     string static = 5;
     string team_description = 6;
     string category = 7;
-    string organizer_description = 8;
-    repeated string prerequisite = 9;
-    repeated string outcome = 10;
+    repeated string prerequisite = 8;
+    repeated string outcome = 9;
 }
 
 message EnvVariable{
@@ -56,7 +55,7 @@ message Exercise{
     string category = 4;
     int32 status = 5;
     repeated ExerciseInstance instance = 6;
-
+    string organizer_description = 7;
 }
 
 message GetExercisesResponse{
