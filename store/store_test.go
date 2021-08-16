@@ -225,7 +225,7 @@ func TestStore_AddCategory(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			if err := s.AddCategory(tc.categ, tc.categ); err != nil {
+			if err := s.AddCategory(tc.categ, tc.categ, tc.description); err != nil {
 				if tc.err {
 					return
 				}
