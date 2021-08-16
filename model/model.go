@@ -5,9 +5,10 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 type Tag string
 
 type Category struct {
-	ID   primitive.ObjectID `bson:"_id,omitempty"`
-	Tag  Tag                `bson:"tag,omitempty"`
-	Name string             `bson:"name,omitempty"`
+	ID             primitive.ObjectID `bson:"_id,omitempty"`
+	Tag            Tag                `bson:"tag,omitempty"`
+	Name           string             `bson:"name,omitempty"`
+	CatDescription string             `bson:"cd,omitempty"`
 }
 
 //todo manage the status somehow

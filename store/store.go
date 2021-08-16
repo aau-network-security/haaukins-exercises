@@ -22,7 +22,7 @@ type Store interface {
 	GetExerciseByCategory(string) ([]model.Exercise, error)
 	GetCategories() []model.Category
 	GetCategoryName(primitive.ObjectID) string
-	AddCategory(string, string) error
+	AddCategory(string, string, string) error
 	AddExercise(string) error
 	UpdateCache() error
 }
@@ -133,7 +133,7 @@ func (s *store) GetCategoryName(obj primitive.ObjectID) string {
 	return ""
 }
 
-func (s *store) AddCategory(tag string, name string) error {
+func (s *store) AddCategory(tag string, name string, catDesc string) error {
 	s.m.Lock()
 	defer s.m.Unlock()
 
@@ -151,6 +151,7 @@ func (s *store) AddCategory(tag string, name string) error {
 	category := model.Category{
 		Tag:  categoryTag, // FR,
 		Name: name,        // Forensics,
+		CatDescription: catDesc,
 	}
 	_, err := collection.InsertOne(ctx, category)
 	if err != nil {

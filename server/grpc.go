@@ -105,6 +105,7 @@ func (s *Server) GetCategories(ctx context.Context, empty *pb.Empty) (*pb.GetCat
 		categs = append(categs, &pb.GetCategoriesResponse_Category{
 			Tag:  string(c.Tag),
 			Name: c.Name,
+			CatDesc: c.CatDescription,
 		})
 	}
 
@@ -114,7 +115,7 @@ func (s *Server) GetCategories(ctx context.Context, empty *pb.Empty) (*pb.GetCat
 func (s *Server) AddCategory(ctx context.Context, request *pb.AddCategoryRequest) (*pb.ResponseStatus, error) {
 
 	log.Printf("ADD category [%s]", request.Tag)
-	if err := s.store.AddCategory(request.Tag, request.Name); err != nil {
+	if err := s.store.AddCategory(request.Tag, request.Name, request.CatDesc); err != nil {
 		return nil, err
 	}
 	return &pb.ResponseStatus{}, nil
