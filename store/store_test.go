@@ -215,11 +215,12 @@ func TestStore_AddCategory(t *testing.T) {
 	tt := []struct {
 		name  string
 		categ string
+		description string
 		err   bool
 	}{
-		{name: "Normal category", categ: "new"},
-		{name: "Already existing category", categ: NCategories[0], err: true},
-		{name: "Normal category 2", categ: "new", err: true},
+		{name: "Normal category", categ: "new", description: "Some description"},
+		{name: "Already existing category", categ: NCategories[0], description: "Some description", err: true},
+		{name: "Normal category 2", categ: "new", description: "Some description", err: true},
 	}
 
 	for _, tc := range tt {
