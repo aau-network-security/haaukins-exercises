@@ -134,10 +134,11 @@ func TestServer_AddCategory(t *testing.T) {
 	tt := []struct {
 		name  string
 		categ string
+		description string
 		err   bool
 	}{
-		{name: "Normal category", categ: "randomcategory"},
-		{name: "Already existing category", categ: "randomcategory", err: true},
+		{name: "Normal category", categ: "randomcategory", description: "Some description"},
+		{name: "Already existing category", categ: "randomcategory", description: "Some description", err: true},
 	}
 
 	for _, tc := range tt {
@@ -145,6 +146,7 @@ func TestServer_AddCategory(t *testing.T) {
 			_, err := c.AddCategory(context.Background(), &pb.AddCategoryRequest{
 				Tag:  tc.categ,
 				Name: tc.categ,
+				CatDesc: tc.description,
 			})
 			if err != nil {
 				if tc.err {
