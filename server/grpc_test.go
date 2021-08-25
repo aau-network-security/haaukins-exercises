@@ -132,10 +132,10 @@ func TestServer_AddCategory(t *testing.T) {
 	c := pb.NewExerciseStoreClient(conn)
 
 	tt := []struct {
-		name  string
-		categ string
+		name        string
+		categ       string
 		description string
-		err   bool
+		err         bool
 	}{
 		{name: "Normal category", categ: "randomcategory", description: "Some description"},
 		{name: "Already existing category", categ: "randomcategory", description: "Some description", err: true},
@@ -144,9 +144,9 @@ func TestServer_AddCategory(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := c.AddCategory(context.Background(), &pb.AddCategoryRequest{
-				Tag:  tc.categ,
-				Name: tc.categ,
-				CatDesc: tc.description,
+				Tag:            tc.categ,
+				Name:           tc.categ,
+				CatDescription: tc.description,
 			})
 			if err != nil {
 				if tc.err {
