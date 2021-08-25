@@ -13,7 +13,7 @@ import (
 
 	pb "github.com/aau-network-security/haaukins-exercises/proto"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 )
