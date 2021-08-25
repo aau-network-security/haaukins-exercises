@@ -1,5 +1,4 @@
 FROM golang:1.15-alpine as builder
-MAINTAINER "Gian Marco Mennecozzi"
 WORKDIR /app
 
 COPY . .

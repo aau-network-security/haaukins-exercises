@@ -18,6 +18,7 @@ type Exercise struct {
 	Tag            Tag                      `bson:"tag,omitempty"`
 	Name           string                   `bson:"name,omitempty"`
 	Secret         bool                     `bson:"secret,omitempty"`
+	Static         bool                     `bson:"static,omitempty"`
 	Instance       []ExerciseInstanceConfig `bson:"instance,omitempty"`
 	Status         int                      `bson:"status"`
 	OrgDescription string                   `bson:"od,omitempty"`

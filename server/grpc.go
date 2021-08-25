@@ -22,15 +22,15 @@ func (s *Server) parseExercise(exercisesStore []model.Exercise) []*pb.Exercise {
 
 			for _, x := range c.Flags {
 				children = append(children, &pb.ChildExercise{
-					Tag:                  string(x.Tag),
-					Name:                 x.Name,
-					EnvFlag:              x.EnvVar,
-					Points:               int32(x.Points),
-					Static:               x.StaticFlag,
-					Category:             x.Category,
-					TeamDescription:      x.TeamDescription,
-					Prerequisite:         x.PreRequisites,
-					Outcome:              x.Outcomes,
+					Tag:             string(x.Tag),
+					Name:            x.Name,
+					EnvFlag:         x.EnvVar,
+					Points:          int32(x.Points),
+					Static:          x.StaticFlag,
+					Category:        x.Category,
+					TeamDescription: x.TeamDescription,
+					Prerequisite:    x.PreRequisites,
+					Outcome:         x.Outcomes,
 				})
 			}
 
@@ -60,12 +60,13 @@ func (s *Server) parseExercise(exercisesStore []model.Exercise) []*pb.Exercise {
 		}
 
 		exercises = append(exercises, &pb.Exercise{
-			Tag:      string(e.Tag),
-			Name:     e.Name,
-			Secret:   e.Secret,
-			Status:   int32(e.Status),
-			Category: s.store.GetCategoryName(e.Category),
-			Instance: instance,
+			Tag:                  string(e.Tag),
+			Name:                 e.Name,
+			Secret:               e.Secret,
+			Static:               e.Static,
+			Status:               int32(e.Status),
+			Category:             s.store.GetCategoryName(e.Category),
+			Instance:             instance,
 			OrganizerDescription: e.OrgDescription,
 		})
 	}
@@ -103,8 +104,8 @@ func (s *Server) GetCategories(ctx context.Context, empty *pb.Empty) (*pb.GetCat
 	var categs []*pb.GetCategoriesResponse_Category
 	for _, c := range s.store.GetCategories() {
 		categs = append(categs, &pb.GetCategoriesResponse_Category{
-			Tag:  string(c.Tag),
-			Name: c.Name,
+			Tag:     string(c.Tag),
+			Name:    c.Name,
 			CatDesc: c.CatDescription,
 		})
 	}
@@ -115,7 +116,7 @@ func (s *Server) GetCategories(ctx context.Context, empty *pb.Empty) (*pb.GetCat
 func (s *Server) AddCategory(ctx context.Context, request *pb.AddCategoryRequest) (*pb.ResponseStatus, error) {
 
 	log.Printf("ADD category [%s]", request.Tag)
-	if err := s.store.AddCategory(request.Tag, request.Name, request.CatDesc); err != nil {
+	if err := s.store.AddCategory(request.Tag, request.Name, request.CatDescription); err != nil {
 		return nil, err
 	}
 	return &pb.ResponseStatus{}, nil
