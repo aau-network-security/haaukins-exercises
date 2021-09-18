@@ -27,7 +27,7 @@ func checkExerciseFields(ex model.Exercise) error {
 	//todo the checks can be extended to other variable as well
 	flags := 0
 	for _, i := range ex.Instance {
-		if i.Image == "" {
+		if i.Image == "" && !ex.Static { // check non-static challenge image values
 			return MissingImageErr
 		}
 
