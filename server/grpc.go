@@ -2,138 +2,81 @@ package server
 
 import (
 	"context"
-	"log"
 
-	"github.com/aau-network-security/haaukins-exercises/model"
+	"github.com/rs/zerolog/log"
 
 	pb "github.com/aau-network-security/haaukins-exercises/proto"
 )
 
-func (s *Server) parseExercise(exercisesStore []model.Exercise) []*pb.Exercise {
-	var exercises []*pb.Exercise
-
-	for _, e := range exercisesStore {
-		var instance []*pb.ExerciseInstance
-
-		for _, c := range e.Instance {
-			var children []*pb.ChildExercise
-			var envs []*pb.EnvVariable
-			var records []*pb.Records
-
-			for _, x := range c.Flags {
-				children = append(children, &pb.ChildExercise{
-					Tag:             string(x.Tag),
-					Name:            x.Name,
-					EnvFlag:         x.EnvVar,
-					Points:          int32(x.Points),
-					Static:          x.StaticFlag,
-					Category:        x.Category,
-					TeamDescription: x.TeamDescription,
-					Prerequisite:    x.PreRequisites,
-					Outcome:         x.Outcomes,
-				})
-			}
-
-			for _, v := range c.Envs {
-				envs = append(envs, &pb.EnvVariable{
-					Name:  v.EnvVar,
-					Value: v.Value,
-				})
-			}
-
-			for _, r := range c.Records {
-				records = append(records, &pb.Records{
-					Type: r.Type,
-					Name: r.Name,
-					Data: r.RData,
-				})
-			}
-
-			instance = append(instance, &pb.ExerciseInstance{
-				Image:    c.Image,
-				Memory:   int32(c.MemoryMB),
-				Cpu:      float32(c.CPU),
-				Envs:     envs,
-				Records:  records,
-				Children: children,
-			})
-		}
-
-		exercises = append(exercises, &pb.Exercise{
-			Tag:                  string(e.Tag),
-			Name:                 e.Name,
-			Secret:               e.Secret,
-			Static:               e.Static,
-			Status:               int32(e.Status),
-			Category:             s.store.GetCategoryName(e.Category),
-			Instance:             instance,
-			OrganizerDescription: e.OrgDescription,
-		})
-	}
-	return exercises
-}
-
 func (s *Server) GetExercises(ctx context.Context, empty *pb.Empty) (*pb.GetExercisesResponse, error) {
-	log.Print("GET all exercises")
-	return &pb.GetExercisesResponse{Exercises: s.parseExercise(s.store.GetExercises())}, nil
+	log.Info().Msg("getting all exercises")
+
+	exercises, err := s.store.GetExercises(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.GetExercisesResponse{Exercises: exercises}, nil
 }
 
 func (s *Server) GetExerciseByTags(ctx context.Context, request *pb.GetExerciseByTagsRequest) (*pb.GetExercisesResponse, error) {
-	tags := request.Tag
-	log.Printf("GET exercises by tag %s", tags)
-	exs, err := s.store.GetExercisesByTags(tags)
+	log.Info().Strs("exercise tags", request.Tag).Msg("getting exercises from database")
+
+	exs, err := s.store.GetExercisesByTags(ctx, request.Tag)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to retrieve challenges by tags")
 		return nil, err
 	}
-	return &pb.GetExercisesResponse{Exercises: s.parseExercise(exs)}, nil
+	return &pb.GetExercisesResponse{Exercises: exs}, nil
 }
 
 func (s *Server) GetExerciseByCategory(ctx context.Context, request *pb.GetExerciseByCategoryRequest) (*pb.GetExercisesResponse, error) {
-	category := request.Category
-	log.Printf("GET exercises by category %s", category)
-	exs, err := s.store.GetExerciseByCategory(category)
+	log.Info().Str("category", request.Category).Msg("getting exercise in category")
+
+	exs, err := s.store.GetExerciseByCategory(ctx, request.Category)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to retrieve challenges by category")
 		return nil, err
 	}
-	return &pb.GetExercisesResponse{Exercises: s.parseExercise(exs)}, nil
+	return &pb.GetExercisesResponse{Exercises: exs}, nil
 }
 
 func (s *Server) GetCategories(ctx context.Context, empty *pb.Empty) (*pb.GetCategoriesResponse, error) {
+	log.Info().Msg("getting all categories")
 
-	log.Print("GET all categories")
-	var categs []*pb.GetCategoriesResponse_Category
-	for _, c := range s.store.GetCategories() {
-		categs = append(categs, &pb.GetCategoriesResponse_Category{
-			Tag:     string(c.Tag),
-			Name:    c.Name,
-			CatDesc: c.CatDescription,
-		})
+	categs, err := s.store.GetCategories(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	return &pb.GetCategoriesResponse{Categories: categs}, nil
 }
 
-func (s *Server) AddCategory(ctx context.Context, request *pb.AddCategoryRequest) (*pb.ResponseStatus, error) {
+func (s *Server) GetCategoriesByName(ctx context.Context, in *pb.GetCategoriesByNameReq) (*pb.GetCategoriesResponse, error) {
+	log.Info().Strs("categories", in.Name).Msg("getting categories by name")
 
-	log.Printf("ADD category [%s]", request.Tag)
-	if err := s.store.AddCategory(request.Tag, request.Name, request.CatDescription); err != nil {
+	categs, err := s.store.GetCategoriesByName(ctx, in.Name)
+	if err != nil {
 		return nil, err
 	}
-	return &pb.ResponseStatus{}, nil
+
+	return &pb.GetCategoriesResponse{Categories: categs}, nil
 }
 
-func (s *Server) AddExercise(ctx context.Context, request *pb.AddExerciseRequest) (*pb.ResponseStatus, error) {
-	log.Printf("Add exercise")
-	if err := s.store.AddExercise(request.Content); err != nil {
+func (s *Server) AddCategory(ctx context.Context, request *pb.AddCategoryRequest) (*pb.Empty, error) {
+	log.Info().Str("name", request.Category.Name).Msg("adding new category to database")
+
+	if err := s.store.AddCategory(ctx, request.Category); err != nil {
 		return nil, err
 	}
-	return &pb.ResponseStatus{}, nil
+
+	return &pb.Empty{}, nil
 }
 
-func (s *Server) UpdateStatus(ctx context.Context, empty *pb.Empty) (*pb.ResponseStatus, error) {
-	log.Print("UPDATE STATUS")
-	if err := s.store.UpdateCache(); err != nil {
+func (s *Server) AddExercises(ctx context.Context, request *pb.AddExercisesRequest) (*pb.Empty, error) {
+	log.Info().Int("amount", len(request.Exercises)).Msg("inserting exercises")
+	if err := s.store.AddExercises(ctx, request.Exercises); err != nil {
 		return nil, err
 	}
-	return &pb.ResponseStatus{}, nil
+	return &pb.Empty{}, nil
 }
