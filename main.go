@@ -3,10 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net"
 
 	"github.com/aau-network-security/haaukins-exercises/server"
+	"github.com/rs/zerolog/log"
+	"google.golang.org/grpc/reflection"
 
 	pb "github.com/aau-network-security/haaukins-exercises/proto"
 )
@@ -22,28 +23,30 @@ func main() {
 
 	c, err := server.NewConfigFromFile(*confFilePtr)
 	if err != nil {
-		log.Fatalf("unable to read configuration file [%s]: %s", *confFilePtr, err)
+		log.Fatal().Err(err).Str("config file", *confFilePtr).Msg("Failed to read configuration file")
 	}
 
 	s, err := server.NewServer(c)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("failed to create new exercise database server")
 	}
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", c.Port))
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatal().Err(err).Uint("port", c.Port).Msg("failed listen on port")
 	}
 
 	opts, err := s.GrpcOpts(c)
 	if err != nil {
-		log.Fatalf("failed to retrieve server options %s", err.Error())
+		log.Fatal().Err(err).Msg("failed to create server option")
 	}
 
 	gRPCServer := s.NewGRPCServer(opts...)
 	pb.RegisterExerciseStoreServer(gRPCServer, s)
-	log.Printf("INFO server waiting for clients on port %d", c.Port)
+	reflection.Register(gRPCServer)
+
+	log.Info().Uint("port", c.Port).Msg("serving clients on port")
 	if err := gRPCServer.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+		log.Fatal().Err(err).Msg("failed to serve grpc")
 	}
 }
