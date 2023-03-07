@@ -1,0 +1,8 @@
+db:
+  host: localhost
+  user: haaukins
+  pass: haaukins
+tls:
+  enabled: true
+  certfile: path-to-cert
+  certkey: path-to-key

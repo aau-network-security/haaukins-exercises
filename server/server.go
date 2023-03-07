@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 	"errors"
-	"io/ioutil"
+	"os"
 
 	pb "github.com/aau-network-security/haaukins-exercises/proto"
 	"github.com/aau-network-security/haaukins-exercises/store"
@@ -69,7 +69,7 @@ type certificate struct {
 	cKeyPath string
 }
 
-func (s *Server) GrpcOpts(conf *Config) ([]grpc.ServerOption, error) {
+func (s *Server) GrpcOpts(conf Config) ([]grpc.ServerOption, error) {
 
 	if conf.TLS.Enabled {
 		creds, err := GetCreds(conf)
@@ -83,7 +83,7 @@ func (s *Server) GrpcOpts(conf *Config) ([]grpc.ServerOption, error) {
 	return []grpc.ServerOption{}, nil
 }
 
-func GetCreds(conf *Config) (credentials.TransportCredentials, error) {
+func GetCreds(conf Config) (credentials.TransportCredentials, error) {
 	log.Info().Msg("created RPC credentials")
 
 	certificateProps := certificate{
@@ -98,27 +98,30 @@ func GetCreds(conf *Config) (credentials.TransportCredentials, error) {
 	return creds, nil
 }
 
+type Remote struct {
+	Host string `yaml:"host"`
+	Port uint   `yaml:"port"`
+	User string `yaml:"user"`
+	Pass string `yaml:"pass"`
+}
+
+type TLSConf struct {
+	Enabled  bool   `yaml:"enabled"`
+	CertFile string `yaml:"certfile"`
+	CertKey  string `yaml:"certkey"`
+}
+
 type Config struct {
-	Host      string `yaml:"host"`
-	Port      uint   `yaml:"port"` //gRPC endpoint
-	AuthKey   string `yaml:"auth-key"`
-	SigninKey string `yaml:"signin-key"`
-	DB        struct {
-		Host string `yaml:"host"`
-		Port uint   `yaml:"port"`
-		User string `yaml:"user"`
-		Pass string `yaml:"pass"`
-	} `yaml:"db"`
-	TLS struct {
-		Enabled  bool   `yaml:"enabled"`
-		CertFile string `yaml:"certfile"`
-		CertKey  string `yaml:"certkey"`
-		CAFile   string `yaml:"cafile"`
-	} `tls:"tls,omitempty"`
+	Host      string  `yaml:"host"`
+	Port      uint    `yaml:"port"`
+	AuthKey   string  `yaml:"auth-key"`
+	SigninKey string  `yaml:"signin-key"`
+	DB        Remote  `yaml:"db"`
+	TLS       TLSConf `tls:"tls,omitempty"`
 }
 
 func NewConfigFromFile(path string) (*Config, error) {
-	f, err := ioutil.ReadFile(path)
+	f, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

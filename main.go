@@ -36,7 +36,7 @@ func main() {
 		log.Fatal().Err(err).Uint("port", c.Port).Msg("failed listen on port")
 	}
 
-	opts, err := s.GrpcOpts(c)
+	opts, err := s.GrpcOpts(*c)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to create server option")
 	}

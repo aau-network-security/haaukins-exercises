@@ -1,0 +1,13 @@
+host: localhost
+port: 50095
+auth-key: "test"
+signin-key: "test"
+db:
+  host: localhost
+  user: haaukins
+  pass: haaukins
+  port: 27017
+tls:
+  enabled: true
+  certfile: path-to-cert
+  certkey: path-to-key
