@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	jwt "github.com/golang-jwt/jwt/v4"
 	"google.golang.org/grpc/metadata"
@@ -14,9 +13,9 @@ const (
 )
 
 var (
-	InvalidAuthKey        = errors.New("Invalid Authentication Key")
-	InvalidTokenFormatErr = errors.New("Invalid token format")
-	MissingKeyErr         = errors.New("No Authentication Key provided")
+	ErrInvalidAuthKey     = errors.New("invalid Authentication Key")
+	ErrInvalidTokenFormat = errors.New("invalid token format")
+	ErrMissingKey         = errors.New("no Authentication Key provided")
 )
 
 type Authenticator interface {
@@ -35,21 +34,21 @@ func NewAuthenticator(Skey, AKey string) Authenticator {
 func (a *auth) AuthenticateContext(ctx context.Context) error {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return MissingKeyErr
+		return ErrMissingKey
 	}
 
 	if len(md["token"]) == 0 {
-		return MissingKeyErr
+		return ErrMissingKey
 	}
 
 	token := md["token"][0]
 	if token == "" {
-		return MissingKeyErr
+		return ErrMissingKey
 	}
 
 	jwtToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return ctx, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			return ctx, ErrInvalidTokenFormat
 		}
 
 		return []byte(a.sKey), nil
@@ -60,16 +59,16 @@ func (a *auth) AuthenticateContext(ctx context.Context) error {
 
 	claims, ok := jwtToken.Claims.(jwt.MapClaims)
 	if !ok || !jwtToken.Valid {
-		return InvalidTokenFormatErr
+		return ErrInvalidTokenFormat
 	}
 
 	authKey, ok := claims[AUTH_KEY].(string)
 	if !ok {
-		return InvalidTokenFormatErr
+		return ErrInvalidTokenFormat
 	}
 
 	if authKey != a.aKey {
-		return InvalidAuthKey
+		return ErrInvalidAuthKey
 	}
 
 	return nil
