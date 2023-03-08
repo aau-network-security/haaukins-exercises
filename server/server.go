@@ -26,7 +26,7 @@ type Server struct {
 	pb.UnimplementedExerciseStoreServer
 }
 
-func NewServer(conf *Config) (*Server, error) {
+func NewServer(conf Config) (*Server, error) {
 
 	st, err := mongodb.NewStore(context.TODO(), conf.DB.Host, conf.DB.Port, conf.DB.User, conf.DB.Pass)
 	if err != nil {
@@ -64,38 +64,20 @@ func (s *Server) NewGRPCServer(opts ...grpc.ServerOption) *grpc.Server {
 	return grpc.NewServer(opts...)
 }
 
-type certificate struct {
-	cPath    string
-	cKeyPath string
-}
-
 func (s *Server) GrpcOpts(conf Config) ([]grpc.ServerOption, error) {
 
 	if conf.TLS.Enabled {
-		creds, err := GetCreds(conf)
+		creds, err := credentials.NewServerTLSFromFile(conf.TLS.CertFile, conf.TLS.CertKey)
 
 		if err != nil {
-			return []grpc.ServerOption{}, errors.New("failed retrieving certificates: " + err.Error())
+			return []grpc.ServerOption{}, err
 		}
+
 		log.Info().Msg("server started running with tls")
 		return []grpc.ServerOption{grpc.Creds(creds)}, nil
 	}
+
 	return []grpc.ServerOption{}, nil
-}
-
-func GetCreds(conf Config) (credentials.TransportCredentials, error) {
-	log.Info().Msg("created RPC credentials")
-
-	certificateProps := certificate{
-		cPath:    conf.TLS.CertFile,
-		cKeyPath: conf.TLS.CertKey,
-	}
-
-	creds, err := credentials.NewServerTLSFromFile(certificateProps.cPath, certificateProps.cKeyPath)
-	if err != nil {
-		return nil, err
-	}
-	return creds, nil
 }
 
 type Remote struct {

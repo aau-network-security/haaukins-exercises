@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	jwt "github.com/golang-jwt/jwt/v4"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -54,7 +55,8 @@ func (a *auth) AuthenticateContext(ctx context.Context) error {
 		return []byte(a.sKey), nil
 	})
 	if err != nil {
-		return err
+		log.Error().Err(err).Msg("failed to parse token")
+		return ErrInvalidTokenFormat
 	}
 
 	claims, ok := jwtToken.Claims.(jwt.MapClaims)

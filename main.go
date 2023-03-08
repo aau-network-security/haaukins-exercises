@@ -26,7 +26,7 @@ func main() {
 		log.Fatal().Err(err).Str("config file", *confFilePtr).Msg("Failed to read configuration file")
 	}
 
-	s, err := server.NewServer(c)
+	s, err := server.NewServer(*c)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to create new exercise database server")
 	}

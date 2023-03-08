@@ -2,133 +2,94 @@ package server
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
-	"fmt"
-	"io/ioutil"
-	"os"
 	"testing"
 
-	"google.golang.org/grpc/credentials"
-
-	pb "github.com/aau-network-security/haaukins-exercises/proto"
-
-	"github.com/golang-jwt/jwt/v4"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/status"
+	"google.golang.org/grpc/metadata"
 )
 
-const (
-	HOST = "localhost:50095" //default in the server.go -> NewConfigFromFile
-)
-
-var (
-	testCertPath    = os.Getenv("CERT")
-	testCertKeyPath = os.Getenv("CERT_KEY")
-	testCAPath      = os.Getenv("CA")
-)
-
-type Creds struct {
-	Token    string
-	Insecure bool
-}
-
-func (c Creds) GetRequestMetadata(context.Context, ...string) (map[string]string, error) {
-	return map[string]string{
-		"token": string(c.Token),
-	}, nil
-}
-
-func (c Creds) RequireTransportSecurity() bool {
-	return !c.Insecure
-}
-
-//Check authentication with the server
-//Certificate created from here https://gist.github.com/cecilemuller/9492b848eb8fe46d462abeb26656c4f8
-func TestStoreConnection(t *testing.T) {
-
-	tokenCorret := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		AUTH_KEY: DEFAULT_AUTH,
-	})
-
-	tokenError := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		AUTH_KEY: "wrong-token",
-	})
-
-	tt := []struct {
-		name  string
-		token *jwt.Token
-		err   string
-	}{
-		{name: "Test Normal Authentication", token: tokenCorret},
-		{name: "Test Unauthorized", token: tokenError, err: "Invalid Authentication Key"},
+func Test_auth_AuthenticateContext(t *testing.T) {
+	type fields struct {
+		sKey string
+		aKey string
 	}
 
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-			tokenString, err := tc.token.SignedString([]byte(DEFAULT_SIGN))
-			if err != nil {
-				t.Fatalf("Error creating the token")
+	tests := []struct {
+		name    string
+		fields  fields
+		ctx     context.Context
+		wantErr error
+	}{
+		{
+			name: "Success",
+			fields: fields{
+				aKey: DEFAULT_AUTH,
+				sKey: DEFAULT_SIGN,
+			},
+			ctx: metadata.NewIncomingContext(context.Background(), map[string][]string{"token": {"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdSI6ImF1dGhrZXkifQ.SdJFhs6LJsOErMVQ_6s5PAVShN3wx5KFU9Tc9w7-jQs"}}),
+		},
+		{
+			name: "Fail - No such key",
+			fields: fields{
+				aKey: DEFAULT_AUTH,
+				sKey: DEFAULT_SIGN,
+			},
+			ctx:     context.Background(),
+			wantErr: ErrMissingKey,
+		},
+		{
+			name: "Fail - Missing token",
+			fields: fields{
+				aKey: DEFAULT_AUTH,
+				sKey: DEFAULT_SIGN,
+			},
+			ctx:     metadata.NewIncomingContext(context.Background(), map[string][]string{}),
+			wantErr: ErrMissingKey,
+		},
+		{
+			name: "Fail - Missing token",
+			fields: fields{
+				aKey: DEFAULT_AUTH,
+				sKey: DEFAULT_SIGN,
+			},
+			ctx:     metadata.NewIncomingContext(context.Background(), map[string][]string{"token": {""}}),
+			wantErr: ErrMissingKey,
+		},
+		{
+			name: "Fail - Broken token",
+			fields: fields{
+				aKey: DEFAULT_AUTH,
+				sKey: DEFAULT_SIGN,
+			},
+			ctx:     metadata.NewIncomingContext(context.Background(), map[string][]string{"token": {"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdSI6ImF1dGhrZXkifQ"}}),
+			wantErr: ErrInvalidTokenFormat,
+		},
+		{
+			name: "Fail - No claims",
+			fields: fields{
+				aKey: DEFAULT_AUTH,
+				sKey: DEFAULT_SIGN,
+			},
+			ctx:     metadata.NewIncomingContext(context.Background(), map[string][]string{"token": {"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.we6lzGXF28AJ3rjDLfntt-lp3VZEJwjNCRBWeGKBQoM"}}),
+			wantErr: ErrInvalidTokenFormat,
+		},
+		{
+			name: "Fail - Wrong auth key",
+			fields: fields{
+				aKey: DEFAULT_AUTH,
+				sKey: DEFAULT_SIGN,
+			},
+			ctx:     metadata.NewIncomingContext(context.Background(), map[string][]string{"token": {"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdSI6InNvbWUgcmFuZG9tIHN0dWZmIn0.pBAkfQS_LY4IhjkqAoOs_p-G03ICxeV01G5PbPeYCks"}}),
+			wantErr: ErrInvalidAuthKey,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := &auth{
+				sKey: tt.fields.sKey,
+				aKey: tt.fields.aKey,
 			}
-
-			authCreds := Creds{Token: tokenString}
-
-			// Load the client certificates from disk
-			certificate, err := tls.LoadX509KeyPair(testCertPath, testCertKeyPath)
-			if err != nil {
-				t.Fatalf("could not load client key pair: %s", err)
-			}
-
-			// Create a certificate pool from the certificate authority
-			certPool := x509.NewCertPool()
-			ca, err := ioutil.ReadFile(testCAPath)
-			if err != nil {
-				t.Fatalf("could not read ca certificate: %s", err)
-			}
-
-			// Append the certificates from the CA
-			if ok := certPool.AppendCertsFromPEM(ca); !ok {
-				t.Fatalf("failed to append ca certs")
-			}
-
-			creds := credentials.NewTLS(&tls.Config{
-				ServerName:   "localhost",
-				Certificates: []tls.Certificate{certificate},
-				RootCAs:      certPool,
-			})
-
-			dialOpts := []grpc.DialOption{
-				grpc.WithTransportCredentials(creds),
-				grpc.WithPerRPCCredentials(authCreds),
-			}
-
-			conn, err := grpc.Dial(HOST, dialOpts...)
-			if err != nil {
-				t.Fatalf("Connection error: %v", err)
-			}
-			defer conn.Close()
-
-			c := pb.NewExerciseStoreClient(conn)
-
-			_, err = c.GetExercises(context.Background(), &pb.Empty{})
-
-			if err != nil {
-				st, ok := status.FromError(err)
-				if ok {
-					err = fmt.Errorf(st.Message())
-				}
-
-				if tc.err != "" {
-					if tc.err != err.Error() {
-						t.Fatalf("unexpected error (expected: %s) received: %s", tc.err, err.Error())
-					}
-					return
-				}
-				t.Fatalf("expected no error, but received: %s", err)
-			}
-
-			if tc.err != "" {
-				t.Fatalf("expected error, but received none")
+			if err := a.AuthenticateContext(tt.ctx); err != tt.wantErr {
+				t.Errorf("auth.AuthenticateContext() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
