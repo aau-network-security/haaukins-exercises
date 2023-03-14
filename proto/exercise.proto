@@ -24,6 +24,7 @@ message Exercise {
     repeated Solution solutions = 8;
     repeated Host hosts = 9;
     repeated string platforms = 10;
+    string privacyEnv = 11;
 }
 
 message Category {
@@ -55,6 +56,7 @@ message DNSRecord{
     string type = 1;
     string name = 2;
     string data = 3;
+    bool hidden = 4;
 }
 
 message Flags {
