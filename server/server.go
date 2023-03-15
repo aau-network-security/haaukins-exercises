@@ -3,11 +3,12 @@ package server
 import (
 	"context"
 	"errors"
-	"io/ioutil"
-	"log"
+	"os"
 
 	pb "github.com/aau-network-security/haaukins-exercises/proto"
 	"github.com/aau-network-security/haaukins-exercises/store"
+	"github.com/aau-network-security/haaukins-exercises/store/mongodb"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"gopkg.in/yaml.v2"
@@ -25,9 +26,9 @@ type Server struct {
 	pb.UnimplementedExerciseStoreServer
 }
 
-func NewServer(conf *Config) (*Server, error) {
+func NewServer(conf Config) (*Server, error) {
 
-	st, err := store.NewStore(conf.DB.Host, conf.DB.Port, conf.DB.User, conf.DB.Pass)
+	st, err := mongodb.NewStore(context.TODO(), conf.DB.Host, conf.DB.Port, conf.DB.User, conf.DB.Pass)
 	if err != nil {
 		return nil, err
 	}
@@ -63,61 +64,46 @@ func (s *Server) NewGRPCServer(opts ...grpc.ServerOption) *grpc.Server {
 	return grpc.NewServer(opts...)
 }
 
-type certificate struct {
-	cPath    string
-	cKeyPath string
-}
-
-func (s *Server) GrpcOpts(conf *Config) ([]grpc.ServerOption, error) {
+func (s *Server) GrpcOpts(conf Config) ([]grpc.ServerOption, error) {
 
 	if conf.TLS.Enabled {
-		creds, err := GetCreds(conf)
+		creds, err := credentials.NewServerTLSFromFile(conf.TLS.CertFile, conf.TLS.CertKey)
 
 		if err != nil {
-			return []grpc.ServerOption{}, errors.New("Error on retrieving certificates: " + err.Error())
+			return []grpc.ServerOption{}, err
 		}
-		log.Printf("INFO server is running in secure mode !")
+
+		log.Info().Msg("server started running with tls")
 		return []grpc.ServerOption{grpc.Creds(creds)}, nil
 	}
+
 	return []grpc.ServerOption{}, nil
 }
 
-func GetCreds(conf *Config) (credentials.TransportCredentials, error) {
-	log.Printf("INFO preparing credentials for RPC")
+type Remote struct {
+	Host string `yaml:"host"`
+	Port uint   `yaml:"port"`
+	User string `yaml:"user"`
+	Pass string `yaml:"pass"`
+}
 
-	certificateProps := certificate{
-		cPath:    conf.TLS.CertFile,
-		cKeyPath: conf.TLS.CertKey,
-	}
-
-	creds, err := credentials.NewServerTLSFromFile(certificateProps.cPath, certificateProps.cKeyPath)
-	if err != nil {
-		return nil, err
-	}
-	return creds, nil
+type TLSConf struct {
+	Enabled  bool   `yaml:"enabled"`
+	CertFile string `yaml:"certfile"`
+	CertKey  string `yaml:"certkey"`
 }
 
 type Config struct {
-	Host      string `yaml:"host"`
-	Port      uint   `yaml:"port"` //gRPC endpoint
-	AuthKey   string `yaml:"auth-key"`
-	SigninKey string `yaml:"signin-key"`
-	DB        struct {
-		Host string `yaml:"host"`
-		Port uint   `yaml:"port"`
-		User string `yaml:"user"`
-		Pass string `yaml:"pass"`
-	} `yaml:"db"`
-	TLS struct {
-		Enabled  bool   `yaml:"enabled"`
-		CertFile string `yaml:"certfile"`
-		CertKey  string `yaml:"certkey"`
-		CAFile   string `yaml:"cafile"`
-	} `tls:"tls,omitempty"`
+	Host      string  `yaml:"host"`
+	Port      uint    `yaml:"port"`
+	AuthKey   string  `yaml:"auth-key"`
+	SigninKey string  `yaml:"signin-key"`
+	DB        Remote  `yaml:"db"`
+	TLS       TLSConf `tls:"tls,omitempty"`
 }
 
 func NewConfigFromFile(path string) (*Config, error) {
-	f, err := ioutil.ReadFile(path)
+	f, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
@@ -129,27 +115,27 @@ func NewConfigFromFile(path string) (*Config, error) {
 	}
 
 	if c.Host == "" {
-		log.Println("DBG host not provided in the configuration file")
+		log.Debug().Str("hostname", "localhost").Msg("host not set in config using default")
 		c.Host = "localhost"
 	}
 
 	if c.Port == 0 {
-		log.Println("DBGpPort not provided in the configuration file")
+		log.Debug().Int("port", 50095).Msg("port not defined in config using default")
 		c.Port = 50095
 	}
 
 	if c.SigninKey == "" {
-		log.Println("DBG signinKey not provided in the configuration file")
+		log.Debug().Str("SIGN_KEY", DEFAULT_SIGN).Msg("signing key not defined using default")
 		c.SigninKey = DEFAULT_SIGN
 	}
 
 	if c.AuthKey == "" {
-		log.Println("DBG authKey not provided in the configuration file")
+		log.Debug().Str("AUTH_KEY", DEFAULT_AUTH).Msg("auth key not defined using default")
 		c.AuthKey = DEFAULT_AUTH
 	}
 
 	if c.DB.Host == "" || c.DB.User == "" || c.DB.Pass == "" {
-		return nil, errors.New("DB parameters missing in the configuration file")
+		return nil, errors.New("missing database information")
 	}
 
 	if c.DB.Port == 0 {
@@ -157,7 +143,7 @@ func NewConfigFromFile(path string) (*Config, error) {
 	}
 
 	if c.TLS.Enabled {
-		if c.TLS.CAFile == "" || c.TLS.CertKey == "" || c.TLS.CertFile == "" {
+		if c.TLS.CertKey == "" || c.TLS.CertFile == "" {
 			return nil, errors.New("certificates parameters missing in the configuration file")
 		}
 	}

@@ -1,31 +1,50 @@
 syntax = "proto3";
 package exercise;
 option go_package = "github.com/aau-network-security/haaukins-exercises/proto";
+
 service ExerciseStore{
+    rpc AddExercises(AddExercisesRequest) returns (Empty) {}
     rpc GetExercises(Empty) returns (GetExercisesResponse) {}
     rpc GetExerciseByTags(GetExerciseByTagsRequest) returns (GetExercisesResponse) {}
     rpc GetExerciseByCategory(GetExerciseByCategoryRequest) returns (GetExercisesResponse) {}
+
+    rpc AddCategory(AddCategoryRequest) returns (Empty) {}
     rpc GetCategories(Empty) returns (GetCategoriesResponse) {}
-
-    rpc UpdateStatus(Empty) returns (ResponseStatus) {}
-
-    //todo future implementation, those will be managed by the webclient
-    rpc AddExercise(AddExerciseRequest) returns (ResponseStatus) {}
-    rpc AddCategory(AddCategoryRequest) returns (ResponseStatus) {}
+    rpc GetCategoriesByName(GetCategoriesByNameReq) returns (GetCategoriesResponse) {}
 }
 
-message Empty{}
-
-message ChildExercise{
+message Exercise {
     string tag = 1;
     string name = 2;
-    string env_flag = 3;
-    int32 points = 4;
-    string static = 5;
-    string team_description = 6;
-    string category = 7;
-    repeated string prerequisite = 8;
-    repeated string outcome = 9;
+    bool secret = 3; 
+    bool static = 4;
+    string category = 5;
+    repeated string topics = 6;
+    string description = 7;
+    repeated Solution solutions = 8;
+    repeated Host hosts = 9;
+    repeated string platforms = 10;
+    string privacyEnv = 11;
+}
+
+message Category {
+    string name = 1;
+    string decription = 2;
+    string tag = 3;
+}
+
+message Solution {
+    string challengeName = 1;
+    string steps = 2;
+}
+
+message Host {
+    string image = 1;
+    int32 memory = 2;
+    float cpu = 3;
+    repeated EnvVariable environment = 4;
+    repeated DNSRecord dns = 5;
+    repeated Flags flags = 6;
 }
 
 message EnvVariable{
@@ -33,30 +52,27 @@ message EnvVariable{
     string value = 2;
 }
 
-message Records{
+message DNSRecord{
     string type = 1;
     string name = 2;
     string data = 3;
+    bool hidden = 4;
 }
 
-message ExerciseInstance{
-    string image = 1;
-    int32 memory = 2;
-    float cpu = 3;
-    repeated EnvVariable envs = 4;
-    repeated Records records = 5;
-    repeated ChildExercise children = 6;
-}
-
-message Exercise{
+message Flags {
     string tag = 1;
     string name = 2;
-    bool secret = 3;
-    bool static = 4;
-    string category = 5;
-    int32 status = 6;
-    repeated ExerciseInstance instance =7;
-    string organizer_description = 8;
+    int32 points = 3;
+    string env = 4;
+    string static = 5;
+    string description = 6;
+    string category = 7;
+}
+
+message Empty{}
+
+message AddExercisesRequest {
+    repeated Exercise exercises = 1;
 }
 
 message GetExercisesResponse{
@@ -72,23 +88,13 @@ message GetExerciseByCategoryRequest{
 }
 
 message GetCategoriesResponse{
-    message Category {
-        string tag = 1;
-        string name = 2;
-        string catDesc = 3;
-    }
     repeated Category categories = 1;
 }
 
-
-message AddExerciseRequest{
-    string content = 3;
+message GetCategoriesByNameReq{
+    repeated string name = 1;
 }
 
 message AddCategoryRequest{
-    string tag = 1;
-    string name = 2;
-    string catDescription = 3;
+    Category category = 1;
 }
-
-message ResponseStatus{}

@@ -2,160 +2,124 @@ package server
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
-	"io/ioutil"
+	"net"
+	"reflect"
+	"strconv"
 	"testing"
 
-	pb "github.com/aau-network-security/haaukins-exercises/proto"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/aau-network-security/haaukins-exercises/proto"
+	"github.com/ory/dockertest"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/test/bufconn"
 )
 
-var (
-	NExercises = []string{"ftp", "xxs", "xxe", "sql", "mitm", "crypto", "shad", "rand", "ccs"}
-)
+func setupTestServer(ctx context.Context) (proto.ExerciseStoreClient, func()) {
+	pool, err := dockertest.NewPool("")
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to create connection to docker")
+	}
 
-func createTestClientConn() (*grpc.ClientConn, error) {
+	resource, err := pool.Run("mongo", "5", []string{"MONGO_INITDB_ROOT_USERNAME=haaukins", "MONGO_INITDB_ROOT_PASSWORD=haaukins"})
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to create docker container")
+	}
 
-	tokenCorret := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		AUTH_KEY: DEFAULT_AUTH,
+	port, err := strconv.ParseUint(resource.GetPort("27017/tcp"), 10, 32)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to get port for service")
+	}
+
+	buffer := 101024 * 1024
+	lis := bufconn.Listen(buffer)
+
+	baseServer := grpc.NewServer()
+	serv, err := NewServer(Config{
+		Host:      "localhost",
+		Port:      50095,
+		AuthKey:   "test",
+		SigninKey: "test",
+		DB: Remote{
+			Host: "localhost",
+			Port: uint(port),
+			User: "haaukins",
+			Pass: "haaukins",
+		},
+		TLS: TLSConf{
+			Enabled:  true,
+			CertFile: "path-to-cert",
+			CertKey:  "path-to-key",
+		},
 	})
-
-	tokenString, err := tokenCorret.SignedString([]byte(DEFAULT_SIGN))
 	if err != nil {
-		return nil, err
+		log.Error().Err(err).Msg("error creating testserver")
 	}
+	proto.RegisterExerciseStoreServer(baseServer, serv)
 
-	authCreds := Creds{Token: tokenString}
+	go func() {
+		if err := baseServer.Serve(lis); err != nil {
+			log.Error().Err(err).Msg("error serving grpc")
+		}
+	}()
 
-	// Load the client certificates from disk
-	certificate, err := tls.LoadX509KeyPair(testCertPath, testCertKeyPath)
+	conn, err := grpc.DialContext(ctx, "",
+		grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
+			return lis.Dial()
+		}), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return nil, err
+		log.Error().Err(err).Msg("error connecting testserver")
 	}
 
-	// Create a certificate pool from the certificate authority
-	certPool := x509.NewCertPool()
-	ca, err := ioutil.ReadFile(testCAPath)
-	if err != nil {
-		return nil, err
+	closer := func() {
+		err := lis.Close()
+		if err != nil {
+			log.Error().Err(err).Msg("error closing test server")
+		}
+		baseServer.Stop()
+		if err := pool.Purge(resource); err != nil {
+			log.Error().Err(err).Msg("error closing mongo")
+		}
 	}
 
-	// Append the certificates from the CA
-	if ok := certPool.AppendCertsFromPEM(ca); !ok {
-		return nil, err
-	}
+	client := proto.NewExerciseStoreClient(conn)
 
-	creds := credentials.NewTLS(&tls.Config{
-		ServerName:   "localhost",
-		Certificates: []tls.Certificate{certificate},
-		RootCAs:      certPool,
-	})
-
-	dialOpts := []grpc.DialOption{
-		grpc.WithTransportCredentials(creds),
-		grpc.WithPerRPCCredentials(authCreds),
-	}
-
-	// Create a connection with the TLS credentials
-	conn, err := grpc.Dial(HOST, dialOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return conn, nil
+	return client, closer
 }
 
-func TestServer_GetExerciseByTags(t *testing.T) {
-	conn, err := createTestClientConn()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer conn.Close()
-	c := pb.NewExerciseStoreClient(conn)
+func TestServer_AddExercises(t *testing.T) {
+	client, closer := setupTestServer(context.Background())
 
-	tt := []struct {
-		name     string
-		tags     []string
-		expected int
-		err      bool
+	type args struct {
+		ctx     context.Context
+		request *proto.AddExercisesRequest
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *proto.Empty
+		wantErr bool
 	}{
-		{name: "Normal Get exercises by tags not empty", tags: NExercises[:4], expected: 4},
-		{name: "Normal Get exercises by tags empty", tags: []string{}, expected: 0},
-		{name: "Invalid tags", tags: []string{"randomex"}, expected: 0, err: true},
+		{
+			name: "success",
+			args: args{
+				ctx:     metadata.NewIncomingContext(context.Background(), map[string][]string{"token": {"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdSI6ImF1dGhrZXkifQ.SdJFhs6LJsOErMVQ_6s5PAVShN3wx5KFU9Tc9w7-jQs"}}),
+				request: &proto.AddExercisesRequest{Exercises: []*proto.Exercise{}},
+			},
+			want: &proto.Empty{},
+		},
 	}
-
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-			resp, err := c.GetExerciseByTags(context.Background(), &pb.GetExerciseByTagsRequest{Tag: tc.tags})
-			if err != nil {
-				if tc.err {
-					return
-				}
-				t.Fatalf("Error get exercises: %v", err)
+	for _, tt := range tests {
+		t.Cleanup(closer)
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := client.AddExercises(tt.args.ctx, tt.args.request)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Server.AddExercises() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-			if tc.err {
-				t.Fatal("Error expected")
-			}
-			if len(resp.Exercises) != tc.expected {
-				t.Fatalf("Expected number of challenges %d, got %d", tc.expected, len(resp.Exercises))
-			}
-		})
-	}
-}
-
-func TestServer_GetCategories(t *testing.T) {
-	conn, err := createTestClientConn()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer conn.Close()
-	c := pb.NewExerciseStoreClient(conn)
-
-	resp, err := c.GetCategories(context.Background(), &pb.Empty{})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if len(resp.Categories) != 3 { //3 is the number of category that should be in the DB 2 + 1 inserted in the store test file
-		t.Fatalf("Expected number of category %d, got %d", 3, len(resp.Categories))
-	}
-}
-
-func TestServer_AddCategory(t *testing.T) {
-	conn, err := createTestClientConn()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer conn.Close()
-	c := pb.NewExerciseStoreClient(conn)
-
-	tt := []struct {
-		name        string
-		categ       string
-		description string
-		err         bool
-	}{
-		{name: "Normal category", categ: "randomcategory", description: "Some description"},
-		{name: "Already existing category", categ: "randomcategory", description: "Some description", err: true},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-			_, err := c.AddCategory(context.Background(), &pb.AddCategoryRequest{
-				Tag:            tc.categ,
-				Name:           tc.categ,
-				CatDescription: tc.description,
-			})
-			if err != nil {
-				if tc.err {
-					return
-				}
-				t.Fatalf("Error insert category: %v", err)
-			}
-			if tc.err {
-				t.Fatal("Error expected")
+			if reflect.TypeOf(got) != reflect.TypeOf(tt.want) {
+				t.Errorf("Server.AddExercises() = %v, want %v", got, tt.want)
 			}
 		})
 	}

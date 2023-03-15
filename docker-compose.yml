@@ -11,18 +11,15 @@ services:
     depends_on:
       - mongo
     volumes:
-      - ${CERTS_PATH}:/certs:ro
-      - ${CONFIG_PATH}:/config.yml:ro  # mount config file
+      - ${CONFIG_PATH}:/config.yml:ro
     networks:
       - internal
 
   mongo:
-    image: mongo
+    image: mongo:5
     env_file:
       - .env
     restart: always
-    ports:
-      - "27017:27017"
     volumes:
       - ${MONGO_DATA_PATH}:/data/db
     networks:
