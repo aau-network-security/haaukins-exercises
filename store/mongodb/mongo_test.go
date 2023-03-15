@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/aau-network-security/haaukins-exercises/proto"
+	"github.com/aau-network-security/haaukins-exercises/testdata"
 	"github.com/ory/dockertest"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/require"
@@ -77,6 +79,38 @@ func TestNewStore(t *testing.T) {
 			}
 			if reflect.TypeOf(got) != reflect.TypeOf(tt.want) {
 				t.Errorf("NewStore() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_handlePrivacyUniverse(t *testing.T) {
+
+	tests := []struct {
+		name string
+		in   []*proto.Exercise
+		want []*proto.Exercise
+	}{
+		{
+			name: "Success - Jobspace only",
+			in:   testdata.InSuccessJobspaceOnly,
+			want: testdata.OutSuccessJobspaceOnly,
+		},
+		{
+			name: "success - no Privacy universe",
+			in:   testdata.InSuccessNoPU,
+			want: testdata.OutSuccessNoPU,
+		},
+		{
+			name: "Success - mixed",
+			in:   testdata.InMixSuccess,
+			want: testdata.OutMixSuccess,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := handlePrivacyUniverse(tt.in); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("handlePrivacyUniverse() = %v, want %v", got, tt.want)
 			}
 		})
 	}

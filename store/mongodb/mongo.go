@@ -3,6 +3,7 @@ package mongodb
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/aau-network-security/haaukins-exercises/proto"
 	"go.mongodb.org/mongo-driver/bson"
@@ -70,8 +71,9 @@ func (s *store) GetExercisesByTags(ctx context.Context, tags []string) ([]*proto
 	if err := cur.All(ctx, &exercises); err != nil {
 		return nil, err
 	}
+	out := handlePrivacyUniverse(exercises)
 
-	return exercises, nil
+	return out, nil
 }
 
 func (s *store) GetExerciseByCategory(ctx context.Context, cat string) ([]*proto.Exercise, error) {
@@ -140,4 +142,68 @@ func (s *store) AddExercises(ctx context.Context, exs []*proto.Exercise) error {
 		}
 	}
 	return nil
+}
+
+func handlePrivacyUniverse(in []*proto.Exercise) []*proto.Exercise {
+	var exercises []*proto.Exercise
+	var privEnvs []string
+	platforms := make(map[string]bool)
+	var flags []*proto.Flags
+	var dns []*proto.DNSRecord
+	var hosts []*proto.Host
+
+	for _, i := range in {
+		if i.Category != "Privacy Universe" {
+			exercises = append(exercises, i)
+			continue
+		}
+		privEnvs = append(privEnvs, i.PrivacyEnv)
+		for _, h := range i.Hosts {
+			flags = append(flags, h.Flags...)
+		}
+
+		for _, p := range i.Platforms {
+			platforms[p] = true
+		}
+	}
+	if len(platforms) >= 1 {
+		for k := range platforms {
+			dns = append(dns, &proto.DNSRecord{
+				Name: fmt.Sprintf("api.%s.hkn", k),
+				Type: "A",
+			})
+			hosts = append(hosts, &proto.Host{
+				Image: fmt.Sprintf("registry.gitlab.com/haaukins/privacy-universe/%s", k),
+				Dns: []*proto.DNSRecord{
+					{
+						Name: fmt.Sprintf("%s.hkn", k),
+						Type: "A",
+					},
+				},
+			})
+		}
+		privacyAPI := proto.Host{
+			Image: "registry.gitlab.com/haaukins/privacy-universe/privacy-api",
+			Environment: []*proto.EnvVariable{
+				{
+					Name:  "CHALLS",
+					Value: strings.Join(privEnvs, ","),
+				},
+			},
+			Dns:   dns,
+			Flags: flags,
+		}
+
+		hosts = append(hosts, &privacyAPI)
+
+		privacyUniverse := proto.Exercise{
+			Name:  "Privacy Universe",
+			Tag:   "pu",
+			Hosts: hosts,
+		}
+
+		exercises = append(exercises, &privacyUniverse)
+	}
+
+	return exercises
 }
